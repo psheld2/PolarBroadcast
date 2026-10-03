@@ -270,7 +270,7 @@ def sc_dual(La, Lb, info, forced=None):
     return u
 
 
-def run_gag(Q1, Q2, n, a, eps, rng):
+def run_gag(Q1, Q2, n, a, eps, rng, select="threshold"):
     code = Code([(s, l) for s in range(n) for l in range(3)], rng)    # shared by cloud and satellite
     N, none = code.N, [[] for _ in range(n)]
     ps = np.array([np.prod([a if (s >> l) & 1 else 1 - a for l in range(3)]) for s in range(8)])
@@ -321,7 +321,16 @@ def run_gag(Q1, Q2, n, a, eps, rng):
         eL += (sc_decode(La, np.zeros(N, bool), genie=u1) != u1).sum(0)
     eH /= GENIE_BLOCKS; eL /= GENIE_BLOCKS
     score = np.maximum(0.5 - eH, eL)                       # common threshold on both criteria
-    order1 = np.argsort(score, kind="stable")              # best satellite positions first
+    if select == "threshold":
+        order1 = np.argsort(score, kind="stable")          # best satellite positions first
+    else:                                                  # "tau=X": most reliable among eH >= X
+        tau = float(select.split("=")[1])
+        ok = eH >= tau
+        order1 = np.concatenate([np.nonzero(ok)[0][np.argsort(eL[ok], kind="stable")],
+                                 np.nonzero(~ok)[0][np.argsort(score[~ok], kind="stable")]])
+    diag = dict(nH=int((eH >= 0.4).sum()), nL=int((eL <= 1e-3).sum()),
+                nHL=int(((eH >= 0.4) & (eL <= 1e-3)).sum()), nH2=int((eH >= 0.2).sum()),
+                nH2L=int(((eH >= 0.2) & (eL <= 1e-3)).sum()))
 
     def encode(u2, fr1, B):
         v = polar_encode(u2)
@@ -370,7 +379,7 @@ def run_gag(Q1, Q2, n, a, eps, rng):
     while k2 > 0 and bler_weak(k2, fr1) > eps:
         k2 -= 1
         fr2 = frozen_from_order(order2, k2)
-    return dict(k2=k2, k1=k1, N=N, M=code.M)
+    return dict(k2=k2, k1=k1, N=N, M=code.M, select=select, **diag)
 
 
 def main():
@@ -380,6 +389,7 @@ def main():
     ap.add_argument("--snr2", type=float, default=8.0); ap.add_argument("--eps", type=float, default=1e-2)
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--out", default="polar_8ary_results.jsonl")
     ap.add_argument("--rm", choices=["punct", "short"], default="short")
+    ap.add_argument("--select", default="threshold", help='gag satellite selection: "threshold" or "tau=X"')
     a = ap.parse_args()
     mk = {"8psk": psk8_matrix, "8qam": qam8_matrix}[a.kind]
     Q1, Q2 = mk(10 ** (a.snr1 / 10)), mk(10 ** (a.snr2 / 10))
@@ -392,7 +402,7 @@ def main():
     elif a.scheme == "tdm":
         r = run_tdm(mk, a.snr1, a.snr2, a.n, a.params[0], a.params[1], a.eps, rng, a.rm)
     elif a.scheme == "gag":
-        r = run_gag(Q1, Q2, a.n, a.params[0], a.eps, rng)
+        r = run_gag(Q1, Q2, a.n, a.params[0], a.eps, rng, a.select)
         a.rm = "punct"
     else:
         raise SystemExit(f"unknown scheme {a.scheme}")

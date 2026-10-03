@@ -1,4 +1,5 @@
-"""Summarize polar_8ary_results.jsonl against the TDM hull and the n = 128 normal approximations.
+"""Summarize polar_8ary_results.jsonl (and the selection-rule runs in gag_select_results.jsonl and
+gag_bsbc_results.jsonl) against the TDM hull and the n = 128 normal approximations.
 
 Usage: python3 polar_8ary_summary.py > polar_8ary_summary.txt
 """
@@ -7,6 +8,12 @@ import json
 import numpy as np
 
 rs = [json.loads(l) for l in open("polar_8ary_results.jsonl")]
+# the paper's construction: threshold rule from the main run, plus the selection-rule runs
+gs = [dict(r, select=r.get("select", "threshold")) for r in rs if r["scheme"] == "gag"]
+try:
+    gs += [json.loads(l) for l in open("gag_select_results.jsonl")]
+except FileNotFoundError:
+    pass
 na = {}
 for line in open("na_curves_8ary.csv").read().split("\n")[1:]:
     if line:
@@ -46,9 +53,26 @@ for kind in ("8psk", "8qam"):
     for r in tdm:
         nt = np.interp(r["R2"], R2g, tpc)
         print(f"                {r['params'][0]:4.2f}  {r['params'][1]:3.1f}  {r['R2']:.3f}  {r['R1']:.3f}  |  {nt:.3f}          | {nt - r['R1']:.3f} ({r['rm']})")
-    print("  paper's construction (gag):   a     R2     R1   | vs TDM hull")
-    for a in (0.02, 0.05, 0.1, 0.2):
-        r = best_rm(kind, "gag", [a])
-        print(f"                              {a:4.2f}  {r['R2']:.3f}  {r['R1']:.3f}  |  {r['R1'] - T(r['R2']):+.3f}")
+    print("  paper's construction:  a   rule        R2     R1   | vs TDM hull   (threshold rule, then the best reliability rule)")
+    for a in sorted({r["params"][0] for r in gs if r["kind"] == kind}):
+        cand = [r for r in gs if r["kind"] == kind and r["params"][0] == a]
+        thr = [r for r in cand if r["select"] == "threshold"][:1]
+        rel = [r for r in cand if r["select"] != "threshold"]
+        for r in thr + ([max(rel, key=lambda r: r["R1"] - T(r["R2"]))] if rel else []):
+            print(f"                      {a:4.2f}  {r['select']:10s} {r['R2']:.3f}  {r['R1']:.3f}  |  {r['R1'] - T(r['R2']):+.3f}")
     sel = np.isfinite(mixna) & np.isfinite(tpc) & (mixna > 0.02) & (tpc > 0.02)
     print(f"  NA prediction at n = 128: max (mixing - TDM+pc) = {np.max((mixna - tpc)[sel]):+.3f}\n")
+
+try:
+    bs = [json.loads(l) for l in open("gag_bsbc_results.jsonl")]
+    thesis = [(0.008, 0.375), (0.055, 0.281), (0.117, 0.180), (0.180, 0.055)]
+    print("== Validation on the paper's BSBC(0.01, 0.10), n = 128 binary uses: this simulator's best R1 with")
+    print("   R2 at least the thesis point's R2 (staircase over all a and selection rules) vs the thesis's")
+    print("   realized polar SUP points (read from its Fig. 4)")
+    print("   thesis (R2, R1)   | this simulator: threshold rule | best rule")
+    for r2, r1 in thesis:
+        thr = max([r["R1"] for r in bs if r["select"] == "threshold" and r["R2"] >= r2 - 1e-9], default=float("nan"))
+        best = max([r["R1"] for r in bs if r["R2"] >= r2 - 1e-9], default=float("nan"))
+        print(f"   ({r2:.3f}, {r1:.3f})   |  {thr:.3f}                         | {best:.3f}")
+except FileNotFoundError:
+    pass

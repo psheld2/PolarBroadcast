@@ -163,7 +163,20 @@ def fig_polar_8ary():
         ax.plot([r["R2"] for r in eq], [r["R1"] for r in eq], "ks", ms=4, label="polar: TDM, equal power")
         ax.plot([r["R2"] for r in pc], [r["R1"] for r in pc], "kD", ms=3.5, mfc="none", label="polar: TDM, power control")
         gag = [best_rm("gag", [a]) for a in (0.02, 0.05, 0.1, 0.2)]
-        ax.plot([r["R2"] for r in gag], [r["R1"] for r in gag], "C3^", ms=4, label="polar: paper's construction")
+        ax.plot([r["R2"] for r in gag], [r["R1"] for r in gag], "C3^", ms=4, mfc="none",
+                label="polar: paper's construction, threshold rule")
+        sel = [json.loads(l) for l in open(os.path.join(HERE, "gag_select_results.jsonl"))]
+        sel = [r for r in sel if r["kind"] == kind and r["select"] != "threshold"]
+        R2t, R1t = np.array([[r["R2"], r["R1"]] for r in tdm]).T
+        def tdm_at(x):                       # staircase of the TDM points, for choosing the best rule
+            v = R1t[R2t >= x - 1e-9]
+            return v.max() if v.size else 0.0
+        best = []
+        for a in sorted({r["params"][0] for r in sel}):
+            c = [r for r in sel if r["params"][0] == a]
+            best.append(max(c, key=lambda r: r["R1"] - tdm_at(r["R2"])))
+        ax.plot([r["R2"] for r in best], [r["R1"] for r in best], "C3^", ms=4,
+                label="polar: paper's construction, reliability rule")
         ax.set_title(f"{kind.upper()}, 13 / 8 dB, n = 128", fontsize=8)
         ax.set_xlabel(r"$R_2$ (bits/symbol)")
         ax.grid(True, lw=0.3, alpha=0.6)
