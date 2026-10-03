@@ -8,8 +8,9 @@
 
 3. figures/gain_8ary_vs_n.pdf and figures/rate_control_8ary.pdf: 8PSK / 8QAM results, from hard8pc_*.txt
    and ratectl_*_13_8.txt (plotting only).
+4. figures/polar_8ary_n128.pdf: polar simulations (polar_8ary_results.jsonl) against na_curves_8ary.csv.
 
-Run from scripts/:  python3 make_report_figures.py [qam_realized crossover gain_8ary rate_control]
+Run from scripts/:  python3 make_report_figures.py [qam_realized crossover gain_8ary rate_control polar_8ary]
 """
 import math
 import os
@@ -135,10 +136,47 @@ def fig_rate_control():
     fig.tight_layout(pad=0.3)
     fig.savefig(os.path.join(OUT, "rate_control_8ary.pdf"))
 
+
+
+def fig_polar_8ary():
+    """Polar simulations at n = 128 (13/8 dB) against the normal approximations."""
+    import json
+    rs = [json.loads(l) for l in open(os.path.join(HERE, "polar_8ary_results.jsonl"))]
+    na = {}
+    for line in open(os.path.join(HERE, "na_curves_8ary.csv")).read().split("\n")[1:]:
+        if line:
+            k, *v = line.split(","); na.setdefault(k, []).append([float(x) for x in v])
+    fig, axs = plt.subplots(1, 2, figsize=(7.2, 3.3), sharey=True)
+    for ax, kind in zip(axs, ("8psk", "8qam")):
+        R2, best, mixna, teq, tpc = np.array(na[kind]).T
+        ax.plot(R2, mixna, "C0--", lw=1, label="NA: mode mixing")
+        ax.plot(R2, tpc, "C2:", lw=1.2, label="NA: TDM + power control")
+        def best_rm(scheme, params):
+            c = [r for r in rs if r["kind"] == kind and r["scheme"] == scheme and r["params"] == params]
+            return max(c, key=lambda r: (r["R1"], r["R2"]))
+        mix = [best_rm("mix", [mu]) for mu in (0.0, 0.25, 0.5, 0.75, 1.0)]
+        ax.plot([r["R2"] for r in mix], [r["R1"] for r in mix], "C0o-", ms=4, lw=1, label="polar: mode mixing")
+        keys = sorted({tuple(r["params"]) for r in rs if r["kind"] == kind and r["scheme"] == "tdm"})
+        tdm = [best_rm("tdm", list(k)) for k in keys]
+        eq = [r for r in tdm if r["params"][1] == 1.0]
+        pc = [r for r in tdm if r["params"][1] != 1.0]
+        ax.plot([r["R2"] for r in eq], [r["R1"] for r in eq], "ks", ms=4, label="polar: TDM, equal power")
+        ax.plot([r["R2"] for r in pc], [r["R1"] for r in pc], "kD", ms=3.5, mfc="none", label="polar: TDM, power control")
+        gag = [best_rm("gag", [a]) for a in (0.02, 0.05, 0.1, 0.2)]
+        ax.plot([r["R2"] for r in gag], [r["R1"] for r in gag], "C3^", ms=4, label="polar: paper's construction")
+        ax.set_title(f"{kind.upper()}, 13 / 8 dB, n = 128", fontsize=8)
+        ax.set_xlabel(r"$R_2$ (bits/symbol)")
+        ax.grid(True, lw=0.3, alpha=0.6)
+    axs[0].set_ylabel(r"$R_1$ (bits/symbol)")
+    axs[1].legend(fontsize=6.3, frameon=False, loc="upper right")
+    fig.tight_layout(pad=0.3)
+    fig.savefig(os.path.join(OUT, "polar_8ary_n128.pdf"))
+
 if __name__ == "__main__":
     import sys
     figs = {"qam_realized": fig_qam_realized, "crossover": fig_crossover,
-            "gain_8ary": fig_8ary_gain, "rate_control": fig_rate_control}
+            "gain_8ary": fig_8ary_gain, "rate_control": fig_rate_control,
+            "polar_8ary": fig_polar_8ary}
     for name in (sys.argv[1:] or figs):
         figs[name]()
         print(f"wrote figure {name}", flush=True)

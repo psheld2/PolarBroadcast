@@ -46,6 +46,7 @@ The script needs only numpy and matplotlib and runs for several minutes. It chec
 - **3-bit symbols — yes.** Hard-decision Gray 8PSK and rectangular 8QAM protect their bits unequally. Splitting the bits between the users (the weak user takes the robust bits) beats TDM with power control from about 128 symbols.
   - Each user's layer is then an ordinary point-to-point polar code.
   - Mixing split modes across symbols gives continuous control of the rate split.
+  - Polar simulations at n = 128 (SC decoding) confirm it: mode mixing beats every simulated TDM point, and the paper's construction falls far behind.
 
 To build it, run from `reports/`:
 
@@ -64,6 +65,8 @@ It uses `../refs.bib`.
 | `hard_8ary_bc.py`, `hard_8ary_pc.py` | 8PSK/8QAM vs equal-power and power-controlled TDM → `hard8_*.txt`, `hard8pc_*.txt` |
 | `bit_levels_8ary.py` | bit-level capacities and polarization → `bit_levels_results.txt` |
 | `rate_control_8ary.py` | mode mixing vs biased level → `ratectl_*_13_8.txt` |
+| `polar_8ary_sim.py`, `run_polar_8ary.sh` | polar simulations of the 8-ary schemes at n = 128 → `polar_8ary_results.jsonl` |
+| `na_curves_8ary.py`, `polar_8ary_summary.py` | reference curves and the polar summary → `na_curves_8ary.csv`, `polar_8ary_summary.txt` |
 | `interior_gaps.py`, `sup_vs_ccp.py` | crossover curves, SUP vs common codeword |
 | `make_report_figures.py` | `reports/figures/*.pdf` |
 
