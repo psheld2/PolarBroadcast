@@ -1,0 +1,32 @@
+Gray-coded QPSK, hard decisions, q1 = 0.01, q2 = 0.1 (labels 00, 01, 10, 11 as x = 0..3)
+
+ q = 0.01: Gray QPSK P(y|x)                QSC(0.0199) with the same symbol error rate
+   0.9801 0.0099 0.0099 0.0001          0.9801 0.0066 0.0066 0.0066
+   0.0099 0.9801 0.0001 0.0099          0.0066 0.9801 0.0066 0.0066
+   0.0099 0.0001 0.9801 0.0099          0.0066 0.0066 0.9801 0.0066
+   0.0001 0.0099 0.0099 0.9801          0.0066 0.0066 0.0066 0.9801
+
+ q = 0.1: Gray QPSK P(y|x)                QSC(0.1900) with the same symbol error rate
+   0.8100 0.0900 0.0900 0.0100          0.8100 0.0633 0.0633 0.0633
+   0.0900 0.8100 0.0100 0.0900          0.0633 0.8100 0.0633 0.0633
+   0.0900 0.0100 0.8100 0.0900          0.0633 0.0633 0.8100 0.0633
+   0.0100 0.0900 0.0900 0.8100          0.0633 0.0633 0.0633 0.8100
+
+P2P capacities (bits/symbol): user 1 1.8384, user 2 1.0620   (QSC model: 1.8276, 0.9974)
+
+Asymptotic max R1 gain of SUP over TDM: +0.0949 bits/symbol at R2 = 0.639 (product aI=aQ=0.100)
+   (2 x BSBC(0.01, 0.10): 2 x 0.0479 = 0.0958)
+Random search over general (P_V, P_X|V): best excess over the families +0.0025 bits/symbol
+
+Check (alpha = 0.1): per-symbol moments vs 2 x BSBC per-use moments: I_s 0.826121 vs 0.826121, V_s 2.018108 vs 2.018108, V_cs -1.467789 vs -1.467789
+
+Normal approximation, eps1 = eps2 = 1e-2: max interior R1 gain of SUP over TDM (bits/symbol)
+ n (symbols) |  Gray QPSK DMC (best design)            |  2 x BSBC(0.01,0.10) at 2n uses  |  QSC(0.0199,0.19)
+  2^7        |  -0.0072  (product aI=0.000 aQ=0.500   ) |  -0.1094                         |  -0.0240
+  2^8        |  -0.0082  (product aI=0.000 aQ=0.395   ) |  -0.0520                         |  -0.0362
+  2^9        |  -0.0042  (product aI=0.000 aQ=0.395   ) |  -0.0172                         |  -0.0275
+  2^10       |  +0.0152  (product aI=aQ=0.110         ) |  +0.0154                         |  -0.0044
+  2^11       |  +0.0374  (product aI=aQ=0.120         ) |  +0.0396                         |  +0.0194
+  2^12       |  +0.0554  (product aI=0.080 aQ=0.080   ) |  +0.0558                         |  +0.0360
+  2^13       |  +0.0642  (product aI=0.080 aQ=0.115   ) |  +0.0673                         |  +0.0499
+  2^14       |  +0.0762  (product aI=aQ=0.090         ) |  +0.0750                         |  +0.0567

@@ -6,7 +6,10 @@
    for the binary model (hard-decision Gray QPSK = two BSBC(0.01, 0.10) uses per symbol) and the
    quaternary symmetric model, from interior_gaps.csv (interior_gaps.py).
 
-Run from scripts/:  python3 make_report_figures.py
+3. figures/gain_8ary_vs_n.pdf and figures/rate_control_8ary.pdf: 8PSK / 8QAM results, from hard8pc_*.txt
+   and ratectl_*_13_8.txt (plotting only).
+
+Run from scripts/:  python3 make_report_figures.py [qam_realized crossover gain_8ary rate_control]
 """
 import math
 import os
@@ -84,8 +87,58 @@ def fig_crossover():
     fig.savefig(os.path.join(OUT, "crossover_binary_vs_quaternary.pdf"))
 
 
+
+
+def fig_8ary_gain():
+    """Gain of the best 8-ary design over TDM with power control (solid) and equal-power TDM (dotted)."""
+    fig, axs = plt.subplots(1, 2, figsize=(7.0, 2.7), sharey=True)
+    for ax, kind in zip(axs, ("8psk", "8qam")):
+        for (pair, col) in (("7.33_2.15", "C0"), ("13_8", "C1"), ("16_6", "C2")):
+            rows = re.findall(r"n = 2\^(\d+)\s*: ([+-][\d.]+) \| ([+-][\d.]+)",
+                              open(os.path.join(HERE, f"hard8pc_{kind}_{pair}.txt")).read())
+            m = [int(r[0]) for r in rows]
+            ax.plot(m, [float(r[2]) for r in rows], "o-", color=col, ms=3, lw=1,
+                    label=pair.replace("_", " / ") + " dB")
+            ax.plot(m, [float(r[1]) for r in rows], ":", color=col, lw=1)
+        ax.axhline(0, color="k", lw=0.6)
+        ax.set_title(kind.upper()); ax.set_xlabel(r"$\log_2$ blocklength (symbols)")
+        ax.grid(True, lw=0.3, alpha=0.6)
+    axs[0].set_ylabel(r"max $R_1^{\rm SUP}-R_1^{\rm TDM}$ (bits/symbol)")
+    axs[1].legend(fontsize=7, frameon=False, title="vs TDM+power control\n(dotted: equal power)", title_fontsize=7)
+    fig.tight_layout(pad=0.3)
+    fig.savefig(os.path.join(OUT, "gain_8ary_vs_n.pdf"))
+
+
+def fig_rate_control():
+    """Advantage in R1 over TDM with power control at 13/8 dB: best design, mode mixing, biased level."""
+    fig, axs = plt.subplots(2, 2, figsize=(7.0, 5.0), sharex="col")
+    for col, kind in enumerate(("8psk", "8qam")):
+        txt = open(os.path.join(HERE, f"ratectl_{kind}_13_8.txt")).read()
+        for row, n in enumerate((128, 2048)):
+            block = txt.split(f"n = {n}:")[1].split("\n\n")[0]
+            rows = re.findall(r"^\s+([\d.]+) \|\s+(\S+)\s+(\S+)\s+(\S+) \|\s+(\S+)", block, re.M)
+            val = lambda v: float(v) if v != "-" else np.nan
+            r2 = [float(r[0]) for r in rows]
+            ax = axs[row, col]
+            tpc = np.array([val(r[4]) for r in rows])
+            for k, (lab, st) in enumerate((("best design", "k-"), ("mode mixing", "C0o-"),
+                                           ("biased level (paper's construction)", "C1s--"))):
+                ax.plot(r2, np.array([val(r[k + 1]) for r in rows]) - tpc, st, ms=3, lw=1, label=lab)
+            ax.axhline(0, color="C2", lw=1, ls=":", label="TDM + power control")
+            ax.set_title(f"{kind.upper()} 13 / 8 dB, n = {n}", fontsize=8)
+            ax.grid(True, lw=0.3, alpha=0.6)
+            if row == 1:
+                ax.set_xlabel(r"$R_2$ (bits/symbol)")
+            if col == 0:
+                ax.set_ylabel(r"$R_1-R_1^{\rm TDM+pc}$ (bits/symbol)")
+    axs[0, 1].legend(fontsize=6.5, frameon=False)
+    fig.tight_layout(pad=0.3)
+    fig.savefig(os.path.join(OUT, "rate_control_8ary.pdf"))
+
 if __name__ == "__main__":
-    fig_qam_realized()
-    print("wrote qam_realized_n128.pdf", flush=True)
-    fig_crossover()
-    print("wrote crossover_binary_vs_quaternary.pdf")
+    import sys
+    figs = {"qam_realized": fig_qam_realized, "crossover": fig_crossover,
+            "gain_8ary": fig_8ary_gain, "rate_control": fig_rate_control}
+    for name in (sys.argv[1:] or figs):
+        figs[name]()
+        print(f"wrote figure {name}", flush=True)

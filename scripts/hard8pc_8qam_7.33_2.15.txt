@@ -1,0 +1,13 @@
+# 8QAM 7.33/2.15 dB: SUP vs TDM with power control (eps = 0.01)
+Asymptotic: best excess of locally searched designs over the family boundary +0.1030
+Asymptotic max R1 gain: vs equal-power TDM +0.2591, vs TDM with power control +0.2528 at R2 = 0.560 (bits a=(0.0,0.5,0.5))
+Normal approximation, max interior R1 gain (bits/symbol):  vs equal-power TDM | vs TDM with power control
+  n = 2^5 : +0.2042 | +0.1992  (bits a=(0.0,0.5,0.5))
+  n = 2^6 : +0.2176 | +0.2122  (bits a=(0.0,0.5,0.5))
+  n = 2^7 : +0.2292 | +0.2219  (bits a=(0.0,0.5,0.5))
+  n = 2^8 : +0.2369 | +0.2312  (bits a=(0.0,0.5,0.5))
+  n = 2^9 : +0.2437 | +0.2370  (bits a=(0.0,0.5,0.5))
+  n = 2^10: +0.2415 | +0.2383  (bits a=(0.0,0.5,0.5))
+  n = 2^11: +0.2512 | +0.2452  (bits a=(0.0,0.5,0.5))
+  n = 2^12: +0.2565 | +0.2501  (bits a=(0.0,0.5,0.5))
+  n = 2^13: +0.2550 | +0.2533  (bits a=(0.0,0.5,0.5))

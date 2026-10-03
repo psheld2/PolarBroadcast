@@ -1,0 +1,39 @@
+# 8QAM hard decisions, Gray labels, SNR1 = 13.0 dB, SNR2 = 8.0 dB, eps = 0.01
+
+P(y|x) at 13.0 dB (rows/cols = labels 0..7); symbol error 0.0124; bit error rates (b2, b1, b0) = [0.0025 0.005  0.005 ]
+[[0.9901 0.0049 0.0049 0.     0.     0.     0.     0.    ]
+ [0.0049 0.9901 0.     0.0049 0.     0.     0.     0.    ]
+ [0.0049 0.     0.9852 0.0049 0.     0.     0.0049 0.    ]
+ [0.     0.0049 0.0049 0.9852 0.     0.     0.     0.0049]
+ [0.     0.     0.     0.     0.9901 0.0049 0.0049 0.    ]
+ [0.     0.     0.     0.     0.0049 0.9901 0.     0.0049]
+ [0.     0.     0.0049 0.     0.0049 0.     0.9852 0.0049]
+ [0.     0.     0.     0.0049 0.     0.0049 0.0049 0.9852]]
+
+P(y|x) at 8.0 dB (rows/cols = labels 0..7); symbol error 0.1756; bit error rates (b2, b1, b0) = [0.0368 0.0735 0.0735]
+[[0.8584 0.0681 0.0681 0.0054 0.     0.     0.     0.    ]
+ [0.0681 0.8584 0.0054 0.0681 0.     0.     0.     0.    ]
+ [0.0681 0.0054 0.7903 0.0627 0.     0.     0.0681 0.0054]
+ [0.0054 0.0681 0.0627 0.7903 0.     0.     0.0054 0.0681]
+ [0.     0.     0.     0.     0.8584 0.0681 0.0681 0.0054]
+ [0.     0.     0.     0.     0.0681 0.8584 0.0054 0.0681]
+ [0.     0.     0.0681 0.0054 0.0681 0.0054 0.7903 0.0627]
+ [0.     0.     0.0054 0.0681 0.0054 0.0681 0.0627 0.7903]]
+
+Q2 = Q1 T with T >= 0 (stochastically degraded)? False (min entry -3.18e-04)
+P2P (uniform input): user 1 C = 2.8873, V = 0.7199; user 2 C = 2.0570, V = 2.1857
+
+Asymptotic: max R1 gain of SUP over TDM +0.1711 bits/symbol at R2 = 1.295 (bits a=(0.0,0.17,0.17))
+   paper-style design (same a on every bit): max gain +0.1026
+   local/random search beyond the families: up to +0.0845 bits/symbol
+
+Normal approximation: max interior R1 gain over TDM (bits/symbol), best design
+  n = 2^5 : best +0.2656 (bits a=(0.0,0.5,0.5))   paper-style -0.6232
+  n = 2^6 : best +0.2227 (bits a=(0.0,0.5,0.5))   paper-style -0.3368
+  n = 2^7 : best +0.2112 (bits a=(0.0,0.5,0.5))   paper-style -0.2036
+  n = 2^8 : best +0.1935 (bits a=(0.0,0.5,0.5))   paper-style -0.1203
+  n = 2^9 : best +0.1790 (bits a=(0.0,0.5,0.5))   paper-style -0.0731
+  n = 2^10: best +0.1608 (bits a=(0.0,0.5,0.5))   paper-style -0.0212
+  n = 2^11: best +0.1543 (bits a=(0.0,0.5,0.5))   paper-style +0.0084
+  n = 2^12: best +0.1551 (bits a=(0.0,0.5,0.5))   paper-style +0.0409
+  n = 2^13: best +0.1619 (bits a=(0.0,0.5,0.5))   paper-style +0.0554

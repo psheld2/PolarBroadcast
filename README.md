@@ -38,10 +38,14 @@ The script needs only numpy and matplotlib and runs for several minutes. It chec
 
 ## Technical report: superposition beyond binary alphabets
 
-`reports/superposition_alphabets.tex` (built PDF alongside) is separate from the paper. It tests the paper's conjecture that larger alphabets favour superposition, using 2-bit (4-point) symbols:
+`reports/superposition_alphabets.tex` (built PDF alongside) is separate from the paper. It tests the paper's conjecture that larger alphabets favour superposition:
 
-- **Power domain:** on the AWGN broadcast channel with a 4-point superposition constellation, the best layout is orthogonal I/Q splitting. That layout is exactly TDM with power control, so there is no superposition gain.
-- **Discrete domain:** on the quaternary symmetric broadcast channel, superposition needs about 2^10 to 2^12 symbols to beat TDM, the same as or longer than the binary channel at equal SNR.
+- **2-bit symbols — no.**
+  - With power-domain 4-point constellations, the best layout is the orthogonal I/Q split, which equals TDM with power control.
+  - With discrete models, the quaternary symmetric BC needs 2^10 to 2^12 symbols to beat TDM, and hard-decision Gray QPSK is exactly two BSBC uses per symbol.
+- **3-bit symbols — yes.** Hard-decision Gray 8PSK and rectangular 8QAM protect their bits unequally. Splitting the bits between the users (the weak user takes the robust bits) beats TDM with power control from about 128 symbols.
+  - Each user's layer is then an ordinary point-to-point polar code.
+  - Mixing split modes across symbols gives continuous control of the rate split.
 
 To build it, run from `reports/`:
 
@@ -55,7 +59,12 @@ It uses `../refs.bib`.
 |---|---|
 | `qam_bc.py`, `qam_sweep.py` | 4-point AWGN normal approximations → `qam_sweep_results.txt` |
 | `qam_polar_sim.py`, `qam_realized.py` | polar SUP/TDM codes with SC decoding → `qam_realized_7.33dB_2.15dB_n128.txt` |
-| `qsbc.py`, `qsbc_sweep.py` | quaternary symmetric BC: families, random search, normal approximations → `qsbc_sweep_results.txt` |
-| `interior_gaps.py` | SUP − TDM gap vs blocklength, binary and quaternary → `interior_gaps.csv` |
-| `sup_vs_ccp.py` | SUP vs common codeword → `sup_vs_ccp_results.txt` |
+| `qsbc.py`, `qsbc_sweep.py` | quaternary symmetric BC (and general-matrix routines) → `qsbc_sweep_results.txt` |
+| `gray_qpsk_bc.py` | hard-decision Gray QPSK → `gray_qpsk_results.txt` |
+| `hard_8ary_bc.py`, `hard_8ary_pc.py` | 8PSK/8QAM vs equal-power and power-controlled TDM → `hard8_*.txt`, `hard8pc_*.txt` |
+| `bit_levels_8ary.py` | bit-level capacities and polarization → `bit_levels_results.txt` |
+| `rate_control_8ary.py` | mode mixing vs biased level → `ratectl_*_13_8.txt` |
+| `interior_gaps.py`, `sup_vs_ccp.py` | crossover curves, SUP vs common codeword |
 | `make_report_figures.py` | `reports/figures/*.pdf` |
+
+The longer sweeps run on an AWS instance (see each script's usage line).

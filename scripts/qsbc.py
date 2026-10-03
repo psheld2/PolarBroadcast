@@ -28,9 +28,13 @@ def qsc_dispersion(p):
 
 def sup_moments(PV, W, p1, p2):
     """PV: (k,), W: (k, 4) = P_{X|V}.  Returns means/variances/covariance of the densities (bits)."""
+    return sup_moments_mat(PV, W, qsc(p1), qsc(p2))
+
+
+def sup_moments_mat(PV, W, Q1, Q2):
+    """As sup_moments, for arbitrary channel matrices Q_j[x, y] = P(y | x) of the two users."""
     out = {}
-    for user, p in ((2, p2), (1, p1)):
-        Q = qsc(p)
+    for user, Q in ((2, Q2), (1, Q1)):
         Pyv = W @ Q                         # (k, 4)  P(y|v)
         Py = PV @ Pyv                       # (4,)
         w = PV[:, None, None] * W[:, :, None] * Q[None, :, :]          # P(v, x, y)
@@ -69,9 +73,14 @@ FAMILIES = {"symmetric": (fam_symmetric, np.linspace(0.002, 0.75, 120)),
 
 def sup_R1(n, eps1, eps2, p1, p2, R2, configs, asymptotic=False):
     """Largest R1 for each R2 over a list of (label, PV, W) configurations."""
+    return sup_R1_mat(n, eps1, eps2, qsc(p1), qsc(p2), R2, configs, asymptotic)
+
+
+def sup_R1_mat(n, eps1, eps2, Q1, Q2, R2, configs, asymptotic=False):
+    """As sup_R1, for arbitrary 4x4 channel matrices."""
     best = np.full(len(R2), -np.inf); arg = [None] * len(R2)
     for label, PV, W in configs:
-        m = sup_moments(PV, W, p1, p2); u2, u1 = m[2], m[1]
+        m = sup_moments_mat(PV, W, Q1, Q2); u2, u1 = m[2], m[1]
         if asymptotic:
             R1 = np.where(R2 <= min(u2["I_c"], u1["I_c"]) + 1e-12, u1["I_s"], -np.inf)
         else:
@@ -93,11 +102,17 @@ def sup_R1(n, eps1, eps2, p1, p2, R2, configs, asymptotic=False):
 
 
 def tdm_R1(n, eps1, eps2, p1, p2, R2, asymptotic=False, lams=np.linspace(0, 1, 4001)):
-    def r(frac, p, eps):
-        C, V = qsc_capacity(p), qsc_dispersion(p)
+    return tdm_R1_cv(n, eps1, eps2, (qsc_capacity(p1), qsc_dispersion(p1)),
+                     (qsc_capacity(p2), qsc_dispersion(p2)), R2, asymptotic, lams)
+
+
+def tdm_R1_cv(n, eps1, eps2, cv1, cv2, R2, asymptotic=False, lams=np.linspace(0, 1, 4001)):
+    """TDM from each user's point-to-point (capacity, dispersion)."""
+    def r(frac, cv, eps):
+        C, V = cv
         val = frac * C - (0 if asymptotic else np.sqrt(frac * V / n) * Qinv(eps))
         return np.where(frac > 0, np.maximum(val, 0), 0.0)
-    r1, r2 = r(lams, p1, eps1), r(1 - lams, p2, eps2)
+    r1, r2 = r(lams, cv1, eps1), r(1 - lams, cv2, eps2)
     return np.array([np.max(np.where(r2 >= x, r1, -np.inf)) for x in R2])
 
 

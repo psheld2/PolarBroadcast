@@ -4,6 +4,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{cite}
+\usepackage{placeins}
 \usepackage[hidelinks]{hyperref}
 
 \newcommand{\Csf}{\mathsf{C}}
@@ -12,7 +13,7 @@
 \newcommand{\BSC}{\mathrm{BSC}}
 \newcommand{\QSC}{\mathrm{QSC}}
 
-\title{Superposition Coding Beyond Binary Alphabets:\\ Power-Domain 4-Point Constellations and the Quaternary Symmetric Broadcast Channel at Finite Blocklength}
+\title{Superposition Coding Beyond Binary Alphabets at Finite Blocklength:\\ 4-Point and 8-Point Constellations}
 \author{Paul Sheldon\\ \small Technical report accompanying the BSBC polar superposition paper}
 \date{October 2026}
 
@@ -21,33 +22,36 @@
 \maketitle
 
 \begin{abstract}
-The companion conference paper finds that on the binary symmetric broadcast channel (BSBC), superposition coding (SUP) does not outperform time-division multiplexing (TDM) until blocklengths of about $2^{11}$ channel uses, even with random coding. Its conclusion conjectures that the binary alphabet's all-or-nothing interference is responsible and that larger alphabets could be more favorable. This report tests that conjecture for 2-bit (4-point) channel symbols in two ways. With power-domain superposition on a complex AWGN broadcast channel, the best 4-point superposition constellation is always the rectangular 4QAM that places the two users on orthogonal I/Q dimensions. That layout is exactly TDM with power control, so the gain over equal-power TDM ($0.07$--$0.45$ bits/symbol) comes from power allocation, not from superposition. With discrete-domain superposition on the quaternary symmetric broadcast channel (QSBC), SUP needs about $2^{10}$--$2^{12}$ symbols to outperform TDM, the same as or longer than the binary channel at equal SNR. Against a common codeword (CCP), both alphabets cross over at about 32 QPSK symbols. Moving from a binary to a quaternary alphabet therefore does not shorten the blocklength at which superposition pays off.
+The companion conference paper finds that on the binary symmetric broadcast channel (BSBC), superposition coding (SUP) does not outperform time-division multiplexing (TDM) until about $2^{11}$ channel uses, even with random coding, and conjectures that larger alphabets could be more favorable. This report tests that conjecture with normal approximations and, where noted, polar-code simulations. For 2-bit (4-point) symbols it does not hold. With power-domain superposition on the AWGN channel, the best 4-point constellation is the orthogonal I/Q split, which equals TDM with power control. With discrete-domain superposition, the quaternary symmetric broadcast channel needs $2^{10}$--$2^{12}$ symbols before SUP beats TDM, and hard-decision Gray QPSK is exactly two BSBC uses per symbol, reproducing the paper. For 3-bit (8-point) symbols the picture changes. Hard-decision Gray 8PSK and rectangular 8QAM protect their label bits unequally, and splitting the bits between the users (the weak user takes the robust bits) beats TDM, even TDM with power control, by $0.03$--$0.22$ bits/symbol already at 128 symbols ($0.07$--$0.25$ at 8192). In this regime the paper's construction (a biased satellite on every bit) is the wrong design, and each user's layer is an ordinary point-to-point polar code. Mixing split modes across symbols, with one code per user, gives continuous control of the rate split and is within $0.012$ bits/symbol of the best design found at $n=128$.
 \end{abstract}
 
 \section{Summary of findings}
 \begin{enumerate}
-\item \textbf{Power domain, 4-point constellation (one bit per user per symbol).} Over the constellation family $x(v,s)=\sqrt{1-\beta}(-1)^v+\sqrt{\beta}\,e^{j\theta}(-1)^s$, the optimum is $\theta=90^\circ$ at every SNR pair and blocklength evaluated. This I/Q split is mathematically identical to TDM with $\lambda=\frac12$ and power control (Section~\ref{sec:equiv}). Against TDM with power control, the gain is zero to within $\pm0.008$ bits/symbol.
-\item \textbf{Polar codes confirm this at $n=128$.} At the SNRs that turn hard-decided Gray QPSK into the paper's $\mathrm{BSBC}(0.01,0.10)$, every $\theta<90^\circ$ polar SUP code lies below the $\theta=90^\circ$ code with the same $\beta$, and $\theta=90^\circ$ reproduces the power-controlled TDM points.
-\item \textbf{Discrete domain, QSBC.} SUP's asymptotic advantage over TDM is $0.06$--$0.08$ bits/symbol (plus up to $0.026$ from unstructured satellite distributions), and SUP first beats TDM at $2^{10}$--$2^{12}$ symbols. At equal QPSK SNR, the binary model crosses at about $2^{10}$ symbols and the quaternary model at $2^{11}$.
+\item \textbf{Power domain, 4-point constellation.} Over the constellations $x(v,s)=\sqrt{1-\beta}(-1)^v+\sqrt{\beta}\,e^{j\theta}(-1)^s$, the optimum is $\theta=90^\circ$ at every SNR pair and blocklength evaluated. This I/Q split is identical to TDM with $\lambda=\frac12$ and power control (Section~\ref{sec:equiv}), so the gain over TDM with power control is zero to within $\pm0.008$ bits/symbol. Polar codes at $n=128$ agree.
+\item \textbf{Discrete domain, quaternary symmetric BC (QSBC).} SUP first beats TDM at $2^{10}$--$2^{12}$ symbols, with an asymptotic advantage of $0.06$--$0.08$ bits/symbol (plus up to $0.026$ from unstructured designs).
+\item \textbf{Hard-decision Gray QPSK} is exactly two BSBC uses per symbol (Section~\ref{sec:grayqpsk}). It reproduces the paper (crossover at $2^{10}$ symbols, asymptotic advantage $0.095$ bits/symbol), and no genuinely 4-ary design improves on it. The QSBC is a pessimistic model of hard-decision QPSK.
+\item \textbf{Hard-decision 8PSK and 8QAM} (Section~\ref{sec:8ary}). Gray labels protect the three bits unequally. A pure bit split beats TDM with power control by $0.03$--$0.22$ bits/symbol at $n=128$ and $0.07$--$0.25$ at $n=8192$, depending on the channel. The paper's construction loses $0.15$--$0.29$ bits/symbol to equal-power TDM at $n=128$.
+\item \textbf{Bit-level polarization} (Section~\ref{sec:levels}). Polar codes polarize each bit level at that level's own rate; they do not move protection between levels. With unequal levels the modulation supplies the cloud/satellite split, each user's code is an ordinary point-to-point polar code, and the satellite-selection problem of the paper does not arise.
+\item \textbf{Fine rate control} (Section~\ref{sec:ratectl}). Mixing two split modes across symbols, with one polar code per user spanning its bits, is within $0.006$ (8PSK) and $0.012$ (8QAM) bits/symbol of the best design at $n=128$. A biased satellite on one level (the paper's construction used as a knob) loses up to $0.22$ bits/symbol at $n=128$ and becomes competitive only from $n\approx2048$.
 \item \textbf{Against CCP}, SUP wins from about 32 QPSK symbols in both the binary and the quaternary model at equal SNR.
-\item \textbf{Implication for the paper:} the conclusion's suggestion that larger discrete alphabets may help is not supported for 4-ary symbols. A genuine power-domain superposition gain needs at least two bits per user per symbol (for example, a hierarchical 16-QAM). That is standard power-domain NOMA, where orthogonal access is still known to win at short blocklengths and low spectral efficiency~\cite{gorce2021noma}.
 \end{enumerate}
 
 \section{Background and question}
-The paper studies the two-user $\mathrm{BSBC}(p_1,p_2)$ with $0<p_1<p_2<\frac12$ and per-user reliability $\varepsilon_1=\varepsilon_2=10^{-2}$. SUP uses a uniform cloud bit $V$ and a satellite $X=V\oplus S$, $S\sim\mathrm{Bern}(\alpha)$; receiver~2 decodes $V$ treating $S$ as noise, and receiver~1 uses successive interference cancellation (SIC). Its normal approximation (Proposition~1 of the paper, following~\cite{Tan+Kosut,polyanskiy:TIT2010}) shows that for $\mathrm{BSBC}(0.01,0.10)$ the SUP region extends beyond the TDM region only from $n=2^{11}$ ($\varepsilon=10^{-2}$), with an asymptotic advantage of only $0.048$ bits per use. Polar SUP codes~\cite{6975233} at $n=128$ fall short of TDM accordingly.
+The paper studies the two-user $\mathrm{BSBC}(p_1,p_2)$ with $0<p_1<p_2<\frac12$ and per-user reliability $\varepsilon_1=\varepsilon_2=10^{-2}$. SUP uses a uniform cloud bit $V$ and a satellite $X=V\oplus S$, $S\sim\mathrm{Bern}(\alpha)$; receiver~2 decodes $V$ treating $S$ as noise, and receiver~1 uses successive interference cancellation (SIC). Its normal approximation (Proposition~1 of the paper, following~\cite{Tan+Kosut,polyanskiy:TIT2010}) shows that for $\mathrm{BSBC}(0.01,0.10)$ the SUP region extends beyond the TDM region only from $n=2^{11}$, with an asymptotic advantage of $0.048$ bits per use. Polar SUP codes~\cite{6975233} at $n=128$ fall short of TDM accordingly, consistent with Gaussian results in which orthogonal access wins at short blocklengths and low spectral efficiency~\cite{gorce2021noma}.
 
-``Moving to a 4-ary alphabet'' admits two different models, and they behave differently:
+``Moving to a larger alphabet'' admits several models, and they behave differently:
 \begin{itemize}
-\item \emph{Power-domain superposition} (Section~\ref{sec:qam}): soft-decision AWGN channel, uniform bits for both users, the satellite's strength set by the constellation geometry.
-\item \emph{Discrete-domain superposition} (Section~\ref{sec:qsbc}): a quaternary discrete memoryless channel, the satellite's strength set by how often it changes the cloud symbol. This is the direct 4-ary analogue of the paper's construction.
+\item \emph{Power-domain superposition} (Section~\ref{sec:qam}): soft-decision AWGN, uniform bits for both users, the satellite's strength set by the constellation geometry.
+\item \emph{Discrete-domain superposition} (Sections~\ref{sec:qsbc}--\ref{sec:grayqpsk}): a quaternary discrete memoryless channel, either the fully symmetric QSC or the hard-decision Gray QPSK channel, with the satellite's strength set by how often it changes the cloud symbol. This is the direct 4-ary analogue of the paper's construction.
+\item \emph{Hard-decision 8-ary channels} (Sections~\ref{sec:8ary}--\ref{sec:ratectl}): Gray 8PSK and rectangular 8QAM with nearest-point decisions, whose label bits are unequally protected.
 \end{itemize}
-A third model is trivial: hard-decided Gray QPSK is two independent BSCs per symbol, so it is two BSBC uses per symbol and all of the paper's results carry over with rates doubled per symbol.
 
 \section{Methods}
-\paragraph{Normal approximation.} For each SUP configuration we compute the means and (co)variances of the information densities $\imath_2(V;Y_2)$, $\imath_{\mathrm c}(V;Y_1)$ and $\imath_{\mathrm s}(X;Y_1|V)$ and apply the per-user normal approximation of the paper's Proposition~1: $R_2\le I_2-\sqrt{V_2/n}\,\Qinv(\varepsilon_2)$, and at receiver~1 the bivariate Gaussian probability $\mathsf F(\varepsilon_{\mathrm c},\varepsilon_{\mathrm s};\rho)\ge1-\varepsilon_1$ for the two SIC stages. Third-order terms are omitted for all schemes. Results for $n\le64$ are not reported, since the approximation is unreliable there.
-\paragraph{Baselines.} TDM gives user~1 a fraction $\lambda$ of the symbols, each user coding at its point-to-point normal-approximation rate. On the AWGN channel we also allow power control, $\lambda P_1+(1-\lambda)P_2=1$. CCP sends both messages in one codeword decoded by both receivers, $R_1+R_2\le\min_j[\Csf_j-\sqrt{\Vsf_j/n}\,\Qinv(\varepsilon_j)]$.
-\paragraph{Metric.} The advantage of SUP at blocklength $n$ is $\max_{R_2}[R_1^{\mathrm{SUP}}(R_2)-R_1^{\mathrm{TDM}}(R_2)]$ over interior rate pairs, those where both schemes have $R_1>0.02$ (\texttt{interior\_gaps.py}). It is negative when SUP is dominated. Its sign, and so the crossover blocklength, is robust; the size of a negative value depends on the interior definition, because both regions meet near their endpoints. (Requiring only $R_1^{\mathrm{TDM}}>0.02$ lets SUP's clipped rate of zero set the maximum near TDM's edge and floors the value at about $-0.02$; an earlier version of these numbers had that flaw.)
-\paragraph{Numerics.} AWGN moments use 2-D Gauss--Hermite quadrature ($48^2$ nodes), checked against $4\times10^5$-sample Monte Carlo. QSBC moments are exact by enumeration, checked against closed forms and a $10^6$-sample Monte Carlo. Polar codes use $G_n=F^{\otimes m}$, exact successive-cancellation (SC) decoding, and a genie-aided Monte-Carlo construction (20{,}000 blocks) on each layer's own channel; information sizes are the largest meeting a simulated block error rate of at most $10^{-2}$ (6{,}000 blocks per evaluation, binary search on $k$).
+\paragraph{Normal approximation.} For each SUP design we compute the means and (co)variances of the information densities $\imath_2(V;Y_2)$, $\imath_{\mathrm c}(V;Y_1)$ and $\imath_{\mathrm s}(X;Y_1|V)$ and apply the per-user normal approximation of the paper's Proposition~1: $R_2\le I_2-\sqrt{V_2/n}\,\Qinv(\varepsilon_2)$, and at receiver~1 the bivariate Gaussian probability $\mathsf F(\varepsilon_{\mathrm c},\varepsilon_{\mathrm s};\rho)\ge1-\varepsilon_1$ for the two SIC stages. Third-order terms are omitted for all schemes. Values for $n\le64$ are indicative only.
+\paragraph{Baselines.} TDM gives user~1 a fraction $\lambda$ of the symbols, each user coding at its point-to-point normal-approximation rate with uniform input. With power control, user~$j$'s slots use energy $P_j$ with $\lambda P_1+(1-\lambda)P_2=1$; for the hard-decision channels this means the same constellation and detector at SNR $P_j\,\mathrm{SNR}_j$. CCP sends both messages in one codeword decoded by both receivers, $R_1+R_2\le\min_j[\Csf_j-\sqrt{\Vsf_j/n}\,\Qinv(\varepsilon_j)]$.
+\paragraph{Metric.} The advantage of SUP at blocklength $n$ is $\max_{R_2}[R_1^{\mathrm{SUP}}(R_2)-R_1^{\mathrm{TDM}}(R_2)]$ over interior rate pairs, those where both schemes have $R_1>0.02$. It is negative when SUP is dominated. Its sign, and so the crossover blocklength, is robust; the size of a negative value depends on the interior definition, because both regions meet near their endpoints. (An earlier version required only $R_1^{\mathrm{TDM}}>0.02$, which lets SUP's clipped rate of zero floor the value at about $-0.02$.)
+\paragraph{Numerics.} AWGN moments use 2-D Gauss--Hermite quadrature ($48^2$ nodes), checked against $4\times10^5$-sample Monte Carlo. Discrete-channel moments are exact by enumeration, checked against closed forms and $10^6$-sample Monte Carlo. The hard-decision 8PSK transition probabilities are exact radial integrals over each decision sector with Gauss--Legendre quadrature in angle; the rectangular 8QAM ones are products of 1-D Gaussian integrals; both agree with Monte Carlo to within $0.003$. Polar codes use $G_n=F^{\otimes m}$, exact successive-cancellation (SC) decoding, and a genie-aided Monte-Carlo construction on each layer's own channel; information sizes are the largest meeting a simulated block error rate of at most $10^{-2}$.
+\paragraph{Design checks.} Each discrete study searches structured design families and then checks them with random and local searches over general cloud and satellite distributions. A design with cloud rate $R_2^{d}$ also achieves every smaller $R_2$, so the family boundary at $R_2$ is $\max\{R_1^d: R_2^d\ge R_2\}$, and a searched design's excess is measured against that.
 
 \section{Power-domain superposition with a 4-point constellation}\label{sec:qam}
 \paragraph{Model.} Complex AWGN broadcast channel $Y_j=X+Z_j$, $Z_j\sim\mathcal{CN}(0,1/\mathrm{SNR}_j)$, $\mathrm{SNR}_1>\mathrm{SNR}_2$. The cloud bit $v$ (user~2) and the satellite bit $s$ (user~1) select
@@ -57,10 +61,10 @@ x(v,s)=\sqrt{1-\beta}\,(-1)^v+\sqrt{\beta}\,e^{j\theta}(-1)^s,\qquad \mathbb E|X
 $\theta=90^\circ$ gives a rectangular 4QAM with the users on separate I/Q dimensions; $\theta=0$ gives a one-dimensional, 4-PAM-like hierarchical constellation. TDM uses Gray QPSK in each user's slots. One SNR pair, $7.33/2.15$~dB, is chosen so that hard-decided Gray QPSK bits are exactly $\mathrm{BSC}(0.01)$ and $\mathrm{BSC}(0.10)$, i.e., the paper's BSBC.
 
 \subsection{The I/Q split is TDM with power control}\label{sec:equiv}
-At $\theta=90^\circ$ the cloud occupies the in-phase dimension with energy $1-\beta$ and the satellite the quadrature dimension with energy $\beta$. The noise has variance $1/(2\,\mathrm{SNR}_j)$ per dimension, so user~2 sees $n$ uses of a binary-input AWGN channel at per-dimension SNR $2(1-\beta)\mathrm{SNR}_2$ and user~1, with no interference, $n$ uses at $2\beta\,\mathrm{SNR}_1$. TDM with $\lambda=\frac12$ and powers $P_2=2(1-\beta)$, $P_1=2\beta$ (which meet $\frac12P_1+\frac12P_2=1$) gives each user $n/2$ QPSK symbols, i.e., $n$ binary-input dimensions at per-dimension SNR $P_j\,\mathrm{SNR}_j$. The two schemes give each user the same channel with the same number of uses, so their rates, dispersions and polar codes coincide.
+At $\theta=90^\circ$ the cloud occupies the in-phase dimension with energy $1-\beta$ and the satellite the quadrature dimension with energy $\beta$. The noise has variance $1/(2\,\mathrm{SNR}_j)$ per dimension, so user~2 sees $n$ uses of a binary-input AWGN channel at per-dimension SNR $2(1-\beta)\mathrm{SNR}_2$ and user~1, with no interference, $n$ uses at $2\beta\,\mathrm{SNR}_1$. TDM with $\lambda=\frac12$ and powers $P_2=2(1-\beta)$, $P_1=2\beta$ gives each user $n/2$ QPSK symbols, i.e., $n$ binary-input dimensions at per-dimension SNR $P_j\,\mathrm{SNR}_j$. The two schemes give each user the same channel with the same number of uses, so their rates, dispersions and polar codes coincide.
 
 \subsection{Normal-approximation results}
-Table~\ref{tab:qam} sweeps $\beta\in(0,1)$ (64 values) and $\theta\in\{0,15,\dots,90\}^\circ$ at $\varepsilon_1=\varepsilon_2=10^{-2}$. At every SNR pair and blocklength, the best configuration is $\theta=90^\circ$. Its advantage over equal-power TDM is large and is present from $n=128$ on, but against TDM with power control it vanishes.
+Table~\ref{tab:qam} sweeps $\beta\in(0,1)$ (64 values) and $\theta\in\{0,15,\dots,90\}^\circ$. At every SNR pair and blocklength, the best configuration is $\theta=90^\circ$. Its advantage over equal-power TDM is present from $n=128$ on, but against TDM with power control it vanishes.
 
 \begin{table}[t]
 \centering
@@ -80,34 +84,33 @@ $\mathrm{SNR}_1/\mathrm{SNR}_2$ (dB) & QPSK capacities & \multicolumn{2}{c}{vs.\
 \end{tabular}}
 \end{table}
 
-\paragraph{Why $\theta=90^\circ$ wins.} With one bit per user per symbol, each user needs only one real dimension. The I/Q split gives each user a full dimension free of interference; any $\theta<90^\circ$ makes the users share a dimension and interfere. A power-domain superposition gain requires each user to need both dimensions, i.e., at least two bits per user per symbol.
+\paragraph{Why $\theta=90^\circ$ wins.} With one bit per user per symbol, each user needs only one real dimension. The I/Q split gives each user a full dimension free of interference; any $\theta<90^\circ$ makes the users share a dimension and interfere.
 
 \subsection{Polar codes at $n=128$}
-Figure~\ref{fig:qam} shows realized rate pairs at the BSBC-matched SNRs with SC decoding and per-user block error rate $\le10^{-2}$. Every $\theta<90^\circ$ point lies below the $\theta=90^\circ$ point with the same $\beta$. The $\theta=90^\circ$, $\beta=0.5$ code realizes $(0.398, 0.852)$, matching equal-power TDM at $\lambda=\frac12$, $(0.391, 0.859)$, as Section~\ref{sec:equiv} predicts; the other $\theta=90^\circ$ points track the power-controlled TDM points within the simulation's resolution.
-
-In this setting the two layers carry independent uniform bits, so each is an ordinary point-to-point polar code on its own binary-input symmetric channel. The satellite-selection problem that the paper studies, which comes from the non-uniform satellite of the Goela--Abbe--Gastpar construction, does not arise. This is the polar-coded NOMA setting of~\cite{dai2018pcnoma}.
+Figure~\ref{fig:qam} shows realized rate pairs at the BSBC-matched SNRs with SC decoding and per-user block error rate $\le10^{-2}$. Every $\theta<90^\circ$ point lies below the $\theta=90^\circ$ point with the same $\beta$. The $\theta=90^\circ$, $\beta=0.5$ code realizes $(0.398, 0.852)$, matching equal-power TDM at $\lambda=\frac12$, $(0.391, 0.859)$, as Section~\ref{sec:equiv} predicts; the other $\theta=90^\circ$ points track the power-controlled TDM points within the simulation's resolution. The two layers carry independent uniform bits, so each is an ordinary point-to-point polar code; this is the polar-coded NOMA setting of~\cite{dai2018pcnoma}.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{figures/qam_realized_n128.pdf}
+\includegraphics[width=0.75\textwidth]{figures/qam_realized_n128.pdf}
 \caption{4-point AWGN broadcast channel at $7.33/2.15$~dB, $n=128$ symbols, $\varepsilon_1=\varepsilon_2=10^{-2}$: normal approximations (lines) and polar codes with SC decoding (markers).}
 \label{fig:qam}
 \end{figure}
 
-\section{Discrete-domain superposition: the quaternary symmetric BC}\label{sec:qsbc}
-\paragraph{Model.} $\mathrm{QSBC}(p_1,p_2)$: $Y_j=X+Z_j \pmod 4$ with $P(Z_j=0)=1-p_j$ and $P(Z_j=z)=p_j/3$ for $z\ne0$. The point-to-point capacity is $\Csf_{\QSC}(p)=2-h(p)-p\log_23$ and the dispersion $\Vsf_{\QSC}(p)=p(1-p)\log_2^2\frac{3(1-p)}{p}$. A $\QSC(p)$ is the composition of two $\QSC$s, so the channel is degraded. Matching the symbol error rate of hard-decided QPSK at the BSBC-matched SNRs gives $p_j=1-(1-q_j)^2$ with $q_j\in\{0.01,0.10\}$, i.e., $\mathrm{QSBC}(0.0199,0.19)$. Unlike Gray QPSK, the QSC corrupts both bits of a symbol together.
+\FloatBarrier
+\section{Discrete domain: the quaternary symmetric BC}\label{sec:qsbc}
+\paragraph{Model.} $\mathrm{QSBC}(p_1,p_2)$: $Y_j=X+Z_j \pmod 4$ with $P(Z_j=0)=1-p_j$ and $P(Z_j=z)=p_j/3$ for $z\ne0$. The point-to-point capacity is $\Csf_{\QSC}(p)=2-h(p)-p\log_23$ and the dispersion $\Vsf_{\QSC}(p)=p(1-p)\log_2^2\frac{3(1-p)}{p}$. Two $\QSC$s in series form a $\QSC$, so the channel is degraded. Matching the symbol error rate of hard-decided QPSK at the BSBC-matched SNRs gives $p_j=1-(1-q_j)^2$ with $q_j\in\{0.01,0.10\}$, i.e., $\mathrm{QSBC}(0.0199,0.19)$.
 
 \paragraph{Superposition families.} The cloud $V$ is uniform on $\mathbb Z_4$ and $X=V+S\pmod 4$, with
 \emph{symmetric} $S$: $P(S=0)=1-a$, $P(S=s)=a/3$;
 \emph{subgroup} $S\in\{0,2\}$ with $P(S=2)=a$; and
 \emph{bit-layer}: a binary cloud selects the pair $\{V,V+2\}$ and the satellite picks $V+2$ with probability $a$.
-A random search over general $(P_V,P_{X|V})$ with $|\mathcal V|=4$ ($4\times10^5$ samples plus local refinement) checks whether the families reach the asymptotic boundary.
+A random search over general $(P_V,P_{X|V})$ with $|\mathcal V|=4$ checks whether the families reach the asymptotic boundary.
 
-\paragraph{Results.} Table~\ref{tab:qsbc} gives the asymptotic advantage and the finite-$n$ advantage. The symmetric and subgroup families form the boundary, but general distributions exceed them by up to $0.026$ bits/symbol, so the true advantage is somewhat larger and the crossovers may come somewhat earlier than shown.
+\paragraph{Results.} Table~\ref{tab:qsbc} gives the asymptotic and finite-$n$ advantage. The symmetric and subgroup families form the boundary; general distributions exceed them by up to $0.026$ bits/symbol, so the true advantage is somewhat larger and the crossovers may come somewhat earlier than shown.
 
 \begin{table}[t]
 \centering
-\caption{QSBC: largest $R_1$ advantage (bits/symbol) of SUP over TDM. The asymptotic value uses the structured families; ``RS'' is the further gain found by random search over general distributions. Finite-$n$ values are normal approximations with $\varepsilon_1=\varepsilon_2=10^{-2}$ over interior rate pairs; a negative value means SUP is dominated, and its size depends on how the interior is defined, so only the sign and the crossover are robust.}
+\caption{QSBC: largest $R_1$ advantage (bits/symbol) of SUP over TDM. ``RS'' is the further asymptotic gain found by random search. Finite-$n$ values are normal approximations over interior rate pairs; only their sign and the crossover are robust.}
 \label{tab:qsbc}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{@{}lccrrrrrrr@{}}
@@ -121,17 +124,60 @@ $\mathrm{QSBC}(0.05,0.30)$ & $0.060$ & $+0.019$ & $<0$ & $<0$ & $<0$ & $+0.003$ 
 \end{tabular}}
 \end{table}
 
+\section{Hard-decision Gray QPSK as a discrete channel}\label{sec:grayqpsk}
+\paragraph{Model.} Label the QPSK points by their Gray bits $(b_I,b_Q)$: $00\to(+,+)$, $01\to(+,-)$, $11\to(-,-)$, $10\to(-,+)$, so neighbouring points differ in one bit. With hard decisions each bit is flipped independently with probability $q=\mathsf Q(\sqrt{\mathrm{SNR}})$, so
+\[
+P(y\mid x)=(1-q)^{2-d(x,y)}\,q^{\,d(x,y)},
+\]
+with $d$ the Hamming distance between the labels: $Y=X\oplus Z$ on $\mathbb Z_2^2$ with $Z=(\mathrm{Bern}(q),\mathrm{Bern}(q))$. This is two independent BSC uses per symbol, with capacity $2(1-h(q))$ and dispersion $2\Vsf_{\BSC}(q)$. Table~\ref{tab:graymat} compares it with the QSC of the same symbol error rate: the QSC moves probability onto the diagonal symbol, which Gray QPSK almost never produces.
+
+\begin{table}[t]
+\centering
+\caption{Transition probabilities from label 00, hard-decision Gray QPSK versus the QSC with the same symbol error rate.}
+\label{tab:graymat}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+to & Gray, $q=0.01$ & $\QSC(0.0199)$ & Gray, $q=0.10$ & $\QSC(0.19)$\\
+\midrule
+00 (correct) & 0.9801 & 0.9801 & 0.81 & 0.81\\
+01 or 10 (one bit wrong) & 0.0099 each & 0.0066 each & 0.09 each & 0.0633 each\\
+11 (both bits wrong) & 0.0001 & 0.0066 & 0.01 & 0.0633\\
+capacity (bits/symbol) & 1.838 & 1.828 & 1.062 & 0.997\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Superposition designs.} Cloud uniform on the four labels and $X=V\oplus S$ with the bits of $S$ independent, $P(S_I=1)=a_I$, $P(S_Q=1)=a_Q$ ($a_I=a_Q$ is the paper's construction on both bits; $a_I=0$, $a_Q=\frac12$ is the I/Q split), plus symmetric and double-flip satellites and a random search over general distributions.
+
+\paragraph{Results.} The per-symbol moments with $a_I=a_Q=\alpha$ equal exactly twice the BSBC per-use moments, and the asymptotic advantage over TDM is $0.095$ bits/symbol ($2\times0.048$). The random search adds only $0.0025$, i.e., no genuinely 4-ary design improves on the paper's construction applied per bit. Table~\ref{tab:gray} gives the finite-$n$ comparison: the Gray model crosses TDM at $2^{10}$ symbols, exactly as the binary analysis, and earlier than the QSC model. Below the crossover the best Gray design gives the weak user one bit alone and the strong user mostly the other, which amounts to TDM at $\lambda=\frac12$; the paper's single-$\alpha$ design cannot vary $\alpha$ between the bits and falls further behind.
+
+\begin{table}[t]
+\centering
+\caption{Largest $R_1$ advantage of SUP over TDM (bits/symbol, $\varepsilon=10^{-2}$) for hard-decision Gray QPSK, the paper's BSBC at twice the blocklength, and the QSC model.}
+\label{tab:gray}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+$n$ (symbols) & $2^7$ & $2^8$ & $2^9$ & $2^{10}$ & $2^{11}$ & $2^{12}$ & $2^{13}$ & $2^{14}$\\
+\midrule
+Gray QPSK, best design & $-0.007$ & $-0.008$ & $-0.004$ & $+0.015$ & $+0.037$ & $+0.055$ & $+0.064$ & $+0.076$\\
+$2\times\mathrm{BSBC}(0.01,0.10)$ & $-0.109$ & $-0.052$ & $-0.017$ & $+0.015$ & $+0.040$ & $+0.056$ & $+0.067$ & $+0.075$\\
+$\mathrm{QSBC}(0.0199,0.19)$ & $-0.024$ & $-0.036$ & $-0.027$ & $-0.004$ & $+0.019$ & $+0.036$ & $+0.050$ & $+0.057$\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \section{Binary versus quaternary at equal SNR}
-Figure~\ref{fig:cross} compares the SUP advantage over TDM in QPSK symbols. In the binary model one QPSK symbol is two BSBC uses, so the BSBC curve is plotted at half its blocklength and twice its per-use rate. SUP first beats TDM at about $2^{10}$ symbols in the binary model and at $2^{11}$ in the quaternary model. Below the crossover the quaternary model's deficit is smaller under this metric (e.g., $-0.02$ against $-0.11$ bits/symbol at $2^7$ symbols), but that magnitude is metric-dependent; the crossover is not. The binary model's asymptotic advantage ($0.096$ bits/symbol) also exceeds the quaternary one ($0.079$, or up to about $0.10$ with optimized satellite distributions). The quaternary alphabet therefore does not shorten the blocklength at which superposition pays off.
+Figure~\ref{fig:cross} compares the SUP advantage over TDM in QPSK symbols. In the binary model one QPSK symbol is two BSBC uses, so the BSBC curve is plotted at half its blocklength and twice its per-use rate. SUP first beats TDM at about $2^{10}$ symbols in the binary (and Gray-QPSK) model and at $2^{11}$ in the QSC model. The binary model's asymptotic advantage ($0.096$ bits/symbol) also exceeds the QSC one ($0.079$, or up to about $0.10$ with optimized satellite distributions). A quaternary alphabet therefore does not shorten the blocklength at which superposition pays off.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\textwidth]{figures/crossover_binary_vs_quaternary.pdf}
-\caption{Largest $R_1$ advantage of SUP over TDM at equal $R_2$ (normal approximation, $\varepsilon_1=\varepsilon_2=10^{-2}$, interior rate pairs), in bits per QPSK symbol, against blocklength in QPSK symbols ($\ge2^7$). Interior pairs are those where both schemes have $R_1>0.02$.}
+\includegraphics[width=0.75\textwidth]{figures/crossover_binary_vs_quaternary.pdf}
+\caption{Largest $R_1$ advantage of SUP over TDM at equal $R_2$ (normal approximation, $\varepsilon_1=\varepsilon_2=10^{-2}$, interior rate pairs), in bits per QPSK symbol, against blocklength in QPSK symbols ($\ge2^7$).}
 \label{fig:cross}
 \end{figure}
 
-\paragraph{Against CCP.} CCP is a weaker baseline, and SUP overtakes it much earlier (Table~\ref{tab:ccp}). In channel uses the quaternary model looks faster, but at equal SNR both cross at 32 QPSK symbols ($2^6$ BSBC uses versus $2^5$ QSBC symbols). These blocklengths are short enough that the normal approximation is only indicative. Entries marked $<0$ mean that SUP has no advantage at that blocklength.
+\paragraph{Against CCP.} CCP is a weaker baseline, and SUP overtakes it much earlier (Table~\ref{tab:ccp}). At equal SNR both models cross at 32 QPSK symbols ($2^6$ BSBC uses versus $2^5$ QSBC symbols). These blocklengths are short enough that the normal approximation is only indicative; $<0$ means no advantage.
 
 \begin{table}[t]
 \centering
@@ -148,32 +194,160 @@ $\mathrm{QSBC}(0.01,0.10)$ (symbols) & $+0.234$ & $+0.231$ & $+0.402$ & $+0.487$
 \end{tabular}
 \end{table}
 
+\FloatBarrier
+\section{Hard-decision 8PSK and 8QAM}\label{sec:8ary}
+\paragraph{Models.} Complex AWGN with $E_s=1$, nearest-point hard decisions and Gray labels $(b_2,b_1,b_0)$. \emph{8PSK}: points $e^{j2\pi k/8}$ with label $k\oplus\lfloor k/2\rfloor$; $P(y|x)$ is the Gaussian mass in the $45^\circ$ sector of $y$. \emph{8QAM}: the rectangular $4\times2$ grid $I\in\{\pm1,\pm3\}$, $Q\in\{\pm1\}$ scaled to unit energy, a Gray 4-PAM label $(b_2,b_1)$ on $I$ and $b_0$ on $Q$; $P(y|x)$ factors into $I$ and $Q$ terms. Unlike Gray QPSK, the three bits are unequally protected (Table~\ref{tab:ber}), and they are not independent channels. Some SNR pairs are not stochastically degraded (8PSK at 13/8~dB and all 8QAM pairs, by margins of $10^{-8}$--$4\times10^{-3}$ in the degrading matrix); the SUP regions remain achievable because receiver~1 decodes the cloud explicitly.
+
+\begin{table}[t]
+\centering
+\caption{Bit error rates of the hard-decision Gray labels and point-to-point capacities (uniform input).}
+\label{tab:ber}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & SNR (dB) & bit error rate $(b_2, b_1, b_0)$ & capacity (bits/symbol)\\
+\midrule
+8PSK & 13 / 8 & (0.004, 0.004, 0.008) / (0.044, 0.044, 0.087) & 2.868 / 2.150\\
+8PSK & 16 / 6 & (0.0002, 0.0002, 0.0003) / (0.072, 0.072, 0.143) & 2.992 / 1.807\\
+8PSK & 7.33 / 2.15 & (0.053, 0.053, 0.105) / (0.146, 0.146, 0.268) & 2.035 / 1.143\\
+8QAM & 13 / 8 & (0.003, 0.005, 0.005) / (0.037, 0.074, 0.074) & 2.887 / 2.057\\
+8QAM & 16 / 6 & (0.0001, 0.0001, 0.0001) / (0.063, 0.125, 0.125) & 2.995 / 1.654\\
+8QAM & 7.33 / 2.15 & (0.045, 0.090, 0.090) / (0.122, 0.236, 0.230) & 1.917 / 1.032\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Designs.} Cloud uniform on the eight labels and $X=V\oplus S$, where the bits of $S$ are independent with $P(S_b=1)=a_b$ on an 8-point grid per bit (512 designs): $a_b=0$ keeps bit $b$ for the weak user, $a_b=\frac12$ gives it to the strong user, and intermediate values put the paper's construction on that bit. A symmetric 8-ary satellite, random designs and local searches complete the set.
+
+\paragraph{Results.} Table~\ref{tab:8ary} and Figure~\ref{fig:8ary}. In every case the best design at finite blocklength is a pure bit split, i.e., discrete hierarchical modulation~\cite{jiang2005hierarchical}: for 8PSK the weak user takes $b_2b_1$ and the strong user $b_0$; for 8QAM the weak user takes the sign bit $b_2$ and the strong user $b_1b_0$. It beats TDM, and still beats TDM with power control, from about 64--128 symbols. The paper's construction (the same $a$ on every bit) is far behind at short blocklengths and overtakes equal-power TDM only at $2^{11}$--$2^{13}$ symbols in four of the six cases, and not at all by $2^{13}$ at $7.33/2.15$~dB. The local search finds designs up to $0.06$--$0.11$ bits/symbol beyond the grid asymptotically, so the gains shown are conservative.
+
+\begin{table}[t]
+\centering
+\caption{Hard-decision 8PSK and 8QAM: largest $R_1$ advantage (bits/symbol, $\varepsilon=10^{-2}$) of the best design over TDM with power control (``pc'') and equal-power TDM (``eq''), and of the paper's construction (same $a$ on every bit) over equal-power TDM.}
+\label{tab:8ary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llrrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{2}{c}{$n\to\infty$} & \multicolumn{4}{c}{best design vs.\ TDM with power control} & \multicolumn{3}{c}{paper's construction vs.\ eq}\\
+ & SNR (dB) & eq & pc & $2^7$ & $2^9$ & $2^{11}$ & $2^{13}$ & $2^7$ & $2^{11}$ & $2^{13}$\\
+\midrule
+8PSK & 7.33 / 2.15 & $+0.156$ & $+0.128$ & $+0.032$ & $+0.074$ & $+0.097$ & $+0.112$ & $-0.151$ & $-0.021$ & $-0.005$\\
+8PSK & 13 / 8 & $+0.155$ & $+0.119$ & $+0.130$ & $+0.118$ & $+0.127$ & $+0.128$ & $-0.232$ & $-0.031$ & $+0.008$\\
+8PSK & 16 / 6 & $+0.285$ & $+0.148$ & $+0.195$ & $+0.172$ & $+0.170$ & $+0.147$ & $-0.287$ & $-0.019$ & $+0.039$\\
+8QAM & 7.33 / 2.15 & $+0.259$ & $+0.253$ & $+0.222$ & $+0.237$ & $+0.245$ & $+0.253$ & $-0.153$ & $-0.031$ & $-0.024$\\
+8QAM & 13 / 8 & $+0.171$ & $+0.104$ & $+0.145$ & $+0.116$ & $+0.081$ & $+0.090$ & $-0.204$ & $+0.008$ & $+0.055$\\
+8QAM & 16 / 6 & $+0.319$ & $+0.089$ & $+0.145$ & $+0.087$ & $+0.060$ & $+0.069$ & $-0.257$ & $+0.042$ & $+0.086$\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/gain_8ary_vs_n.pdf}
+\caption{Largest $R_1$ advantage of the best 8-ary design over TDM with power control (solid) and equal-power TDM (dotted), against blocklength in symbols.}
+\label{fig:8ary}
+\end{figure}
+
+\paragraph{Why 8-ary differs from 4-ary.} In Gray QPSK the two bits are equally protected and independent, so a bit split is exactly TDM at $\lambda=\frac12$. In Gray 8PSK and 8QAM a bit split gives the weak user the bits that its own channel protects best and the strong user the bit that only it can resolve, which no orthogonal schedule reproduces, even with power control. In power-domain terms, the 8-ary constellation is itself a superposition of a coarse and a fine constellation.
+
+\FloatBarrier
+\section{Bit-level polarization with unequal protection}\label{sec:levels}
+\paragraph{Bit levels.} By the chain rule, the symbol channel splits into binary level channels (multilevel coding~\cite{imai1977mlc,wachsmann1999mlc}):
+\[
+I(X;Y)=I(b_2;Y)+I(b_1;Y\mid b_2)+I(b_0;Y\mid b_2,b_1).
+\]
+Decoding each bit on its own (bit-interleaved coded modulation, BICM~\cite{caire1998bicm}) gives $\sum_b I(b;Y)$ instead. With Gray labels the two differ by at most $0.011$ bits/symbol here: the levels are nearly independent but unequally protected (Table~\ref{tab:levels}).
+
+\begin{table}[t]
+\centering
+\caption{Level capacities (multistage order), Bhattacharyya parameters $Z$, and how a length-128 polar transform polarizes each level (good/bad synthetic channels at tolerance $10^{-3}$, from the erasure-channel recursion, an upper bound used for illustration). Hard decisions, 8~dB.}
+\label{tab:levels}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+ & & $b_2$ & $b_1\mid b_2$ & $b_0\mid b_2b_1$\\
+\midrule
+8PSK & capacity & 0.784 & 0.784 & 0.583\\
+     & $Z$ & 0.30 & 0.30 & 0.55\\
+     & good / bad of 128 & 51 / 12 & 51 / 12 & 22 / 33\\
+\midrule
+8QAM & capacity & 0.811 & 0.625 & 0.621\\
+     & $Z$ & 0.26 & 0.51 & 0.52\\
+     & good / bad of 128 & 57 / 10 & 27 / 30 & 27 / 32\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Polarization happens within a level.} Arıkan's transform over $n$ uses of one level channel sorts that level into good and bad synthetic channels, and the fraction of good ones tends to the level's capacity~\cite{ArikanPolar}. It does not move protection between levels: at $n=128$ the weak 8PSK level $b_0$ has 22 good synthetic channels and 73 still unpolarized, against 51 and 65 for $b_2$ and $b_1$.
+
+\paragraph{Two ways to code across levels.} (i)~One polar code over all levels: the labeling acts as additional polarization stages, and a length-$3n$ code chooses its frozen set from all $3n$ synthetic channels, each evaluated with its own level's statistics~\cite{seidl2013pcm,mahdavifar2016bicm}. Polarization still holds for such non-identical channels~\cite{alsan2016nonstationary}, but channel-independent orderings such as the 5G NR sequence~\cite{3gpp38212,bioglio2021} assume identical channels, so a level-aware construction (e.g., Gaussian approximation per level~\cite{trifonov2012ga} or density evolution~\cite{talvardy2013}) and a careful mapping of bits to levels are needed. (ii)~One code per level with multistage decoding.
+
+\paragraph{The broadcast bit split is option~(ii) with levels assigned to users.} For 8PSK the weak user's code covers $b_2b_1$ and is decoded with $b_0$ as noise (1.567 bits/symbol at 8~dB); the strong user decodes $b_2b_1$, then its own code on $b_0$ (0.934 at 13~dB). For 8QAM the weak user takes $b_2$ (0.811) and the strong user $b_1b_0$ given $b_2$ (1.910). All bits are uniform, so each code is an ordinary point-to-point polar code. On the BSBC there is only one level, and the only way to create a cloud and a satellite is to bias the satellite and carve both out of one polarization process, which is where the paper's finite-length selection conflict comes from. With unequal levels the modulation supplies the split and that conflict disappears.
+
+\FloatBarrier
+\section{Fine rate control}\label{sec:ratectl}
+A pure bit split gives only corner points. For 8PSK at 13/8~dB the modes are: the weak user takes all three bits ($R_2\le2.150$), $b_2b_1$ ($R_2\le1.567$, $R_1\le0.934$), $b_2$ ($R_2\le0.784$, $R_1\le1.901$), or nothing ($R_1\le2.868$). Lowering one user's code rate moves inward only. Two knobs move along the boundary:
+\begin{itemize}
+\item \textbf{Mode mixing.} Use one split mode on a fraction $\mu$ of the symbols and the neighbouring mode on the rest, with one code per user spanning all of its bits. In 8PSK between ``$b_2b_1\,|\,b_0$'' and ``$b_2\,|\,b_1b_0$'', the weak user's code covers $b_2$ everywhere and $b_1$ on the first group; the strong user's covers $b_0$ everywhere and $b_1$ on the second. Per-symbol means and dispersions are the $\mu$-weighted averages of the two modes', so the rate split moves continuously with $\mu$ (steps of $1/n$).
+\item \textbf{Biased level.} The paper's construction on the one level that differs between neighbouring modes: the satellite flips that bit with probability $\alpha\in(0,\frac12)$.
+\end{itemize}
+
+\begin{table}[t]
+\centering
+\caption{Largest shortfall (bits/symbol) of each knob from the best design found, over the whole $R_2$ range, at 13/8~dB.}
+\label{tab:ratectl}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & $n=128$ & $n=512$ & $n=2048$ & capacity\\
+\midrule
+mode mixing, 8PSK / 8QAM & 0.006 / 0.012 & 0.022 / 0.023 & 0.020 / 0.047 & 0.062 / 0.109\\
+biased level, 8PSK / 8QAM & 0.212 / 0.222 & 0.115 / 0.115 & 0.073 / 0.073 & 0.079 / 0.102\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/rate_control_8ary.pdf}
+\caption{Advantage in $R_1$ over TDM with power control at 13/8~dB, for the best design, mode mixing, and the biased level, at $n=128$ (top) and $n=2048$ (bottom).}
+\label{fig:ratectl}
+\end{figure}
+
+Table~\ref{tab:ratectl} and Figure~\ref{fig:ratectl} show that mode mixing is the knob for short blocklengths: at $n=128$ it is the best design found to within $0.012$ bits/symbol and beats TDM with power control by up to about $0.13$ bits/symbol in the middle of the region (8PSK at $R_2=1.32$: $0.855$ against $0.722$). The biased level has worse dispersion and loses up to $0.22$ bits/symbol at $n=128$; it matches the best design at some rate splits from $n\approx2048$ and asymptotically, and it brings back the satellite-selection problem on that level. Practical points for mode mixing:
+\begin{itemize}
+\item Code lengths are generally not powers of two (in 8PSK the weak user's code has $(1+\mu)n$ coded bits and the strong user's $(2-\mu)n$), so rate matching by puncturing or shortening~\cite{3gpp38212,bioglio2021} is needed, or values of $\mu$ that give power-of-two lengths.
+\item Each user's code spans two kinds of bit channel, so its frozen set should come from per-channel reliabilities~\cite{trifonov2012ga,mahdavifar2016bicm}.
+\item The choice of $\mu$ for a target $(R_1,R_2)$ is a one-dimensional search with the mixed moments.
+\end{itemize}
+
+\FloatBarrier
 \section{Discussion and implications for the paper}
 \begin{itemize}
-\item The paper's conclusion suggests that larger alphabets might make superposition more attractive. For 4-ary symbols this does not hold in either sense: the discrete construction needs the same or longer blocklength, and the power-domain construction's gains are power allocation that orthogonal access also obtains. The sentence should be revised, or replaced by the statement that at equal SNR a quaternary alphabet does not shorten the crossover.
-\item The finding is consistent with Gaussian-channel results: Gorce \emph{et al.}~\cite{gorce2021noma} report that orthogonal access outperforms superposition at short blocklengths and below one bit per channel use; all channels here operate in or near that regime.
-\item Uniform-bit power-domain superposition removes the satellite-selection problem of the Goela--Abbe--Gastpar construction, because each layer becomes an ordinary polar code. If the paper is reframed around when superposition pays off, this is worth a remark.
-\item The natural next experiment is two bits per user per symbol (a hierarchical 16-QAM), where orthogonal I/Q splitting can no longer give each user a full dimension.
+\item \textbf{The conclusion's conjecture needs qualifying.} Larger alphabets do not help in the paper's sense when the symbol has 2 bits: the discrete construction needs the same or longer blocklength, and the power-domain gains are power allocation that orthogonal access also obtains. With 3-bit symbols and unequal bit protection they do help, but through bit splitting, not through the paper's biased satellite.
+\item \textbf{A possible reframing.} ``When does superposition pay off at finite blocklength?'' has a clean answer across the models here: when the alphabet offers unequally protected components that can be assigned to the users. Otherwise orthogonal access is as good or better at short blocklengths, consistent with~\cite{gorce2021noma}.
+\item \textbf{Polar implementation.} In the regime where superposition pays off, the layers carry uniform bits and each is an ordinary point-to-point polar code (multilevel polar coding with SIC~\cite{seidl2013pcm}). The paper's construction remains useful as a long-blocklength refinement on one level.
+\item \textbf{Next experiments.} Soft-decision 8PSK/8QAM against TDM with power control (the 4-point soft results suggest the margin may shrink); a polar simulation of mode mixing at $n=128$ with CRC-aided list decoding~\cite{talvardy2015list}; star 8QAM; and 16-point hierarchical constellations.
 \end{itemize}
 
 \section{Limitations}
 \begin{itemize}
-\item Normal approximations without third-order terms; values at $n\le64$ omitted. For the BSBC, adding $\frac12\log n/n$ to every constituent code did not move the TDM crossover.
-\item The 4-point constellations are the parallelogram family $a(v)+b(s)$; other labelings of four points are not covered.
-\item TDM with power control assumes an average power constraint across a user's slots.
-\item The QSBC finite-$n$ curves use the structured families; general distributions add up to $0.026$ bits/symbol asymptotically.
-\item Polar simulations: one SNR pair, $n=128$, SC decoding only, block error rates estimated from 6{,}000 blocks (about $\pm25\%$ relative at $10^{-2}$), rate resolution $1/128$.
-\item The quaternary channel is the fully symmetric QSC. Other 4-ary channels (e.g., with adjacent-symbol errors more likely than diagonal ones) may behave differently.
+\item Normal approximations without third-order terms; values at $n\le64$ are indicative only. For the BSBC, adding $\frac12\log n/n$ to every constituent code did not move the TDM crossover.
+\item The 8PSK and 8QAM results are hard-decision models and normal approximations; no 8-ary polar codes were simulated.
+\item 4-point constellations are the parallelogram family $a(v)+b(s)$; the 8QAM is the rectangular grid only; the quaternary discrete channel is either the QSC or hard-decision Gray QPSK.
+\item TDM with power control assumes an average power constraint across a user's slots and the same constellation and detector in every slot.
+\item The design grids are coarse (64 values of $\beta$; 8 values per bit for 8-ary). Random and local searches show the 8-ary gains are conservative by up to about $0.1$ bits/symbol asymptotically.
+\item Polar simulations (4-point AWGN only): one SNR pair, $n=128$, SC decoding, block error rates from 6{,}000 blocks (about $\pm25\%$ relative at $10^{-2}$), rate resolution $1/128$.
 \end{itemize}
 
 \section{Reproducibility}
-All scripts are in \texttt{scripts/} of the repository and need only numpy and matplotlib.
+All scripts are in \texttt{scripts/} and need only numpy and matplotlib; the longer sweeps were run on an AWS c7i instance.
 \begin{itemize}
-\item \texttt{qam\_bc.py}, \texttt{qam\_sweep.py}: 4-point AWGN normal approximations; results in \texttt{qam\_sweep\_results.txt}.
-\item \texttt{qam\_polar\_sim.py}, \texttt{qam\_realized.py}: polar encoder, SC decoder, genie construction and rate search; \texttt{python3 qam\_realized.py 7.33 2.15 128} gives \texttt{qam\_realized\_7.33dB\_2.15dB\_n128.txt} (about 10 minutes).
-\item \texttt{qsbc.py}, \texttt{qsbc\_sweep.py}: QSBC moments, families, random search and normal approximations; results in \texttt{qsbc\_sweep\_results.txt}.
-\item \texttt{sup\_vs\_ccp.py}: Table~\ref{tab:ccp}. \texttt{interior\_gaps.py}: the curves of Figure~\ref{fig:cross} and the finite-$n$ entries of Table~\ref{tab:qsbc}.
-\item \texttt{make\_report\_figures.py}: both figures.
+\item \texttt{qam\_bc.py}, \texttt{qam\_sweep.py}: 4-point AWGN normal approximations (\texttt{qam\_sweep\_results.txt}).
+\item \texttt{qam\_polar\_sim.py}, \texttt{qam\_realized.py}: polar encoder, SC decoder, genie construction and rate search (\texttt{qam\_realized\_7.33dB\_2.15dB\_n128.txt}).
+\item \texttt{qsbc.py}, \texttt{qsbc\_sweep.py}: QSBC moments, families, random search and normal approximations (\texttt{qsbc\_sweep\_results.txt}); \texttt{qsbc.py} also provides the general-matrix routines used below.
+\item \texttt{gray\_qpsk\_bc.py}: hard-decision Gray QPSK (\texttt{gray\_qpsk\_results.txt}).
+\item \texttt{hard\_8ary\_bc.py}, \texttt{hard\_8ary\_pc.py}: 8PSK/8QAM channel matrices, designs, comparisons with equal-power and power-controlled TDM (\texttt{hard8\_*.txt}, \texttt{hard8pc\_*.txt}).
+\item \texttt{bit\_levels\_8ary.py}: Table~\ref{tab:levels} (\texttt{bit\_levels\_results.txt}). \texttt{rate\_control\_8ary.py}: Section~\ref{sec:ratectl} (\texttt{ratectl\_*\_13\_8.txt}).
+\item \texttt{sup\_vs\_ccp.py}: Table~\ref{tab:ccp}. \texttt{interior\_gaps.py}: Figure~\ref{fig:cross} and Table~\ref{tab:qsbc}.
+\item \texttt{make\_report\_figures.py}: all figures.
 \end{itemize}
 
 \bibliographystyle{IEEEtran}
