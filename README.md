@@ -35,3 +35,27 @@ python3 scripts/normal_approx.py
 ```
 
 The script needs only numpy and matplotlib and runs for several minutes. It checks the closed-form moments of Proposition 1 against exact enumeration, prints the normal approximations at n = 128 for comparison with Fig. 4, and writes `figures/crossover.{pdf,csv}`.
+
+## Technical report: superposition beyond binary alphabets
+
+`reports/superposition_alphabets.tex` (built PDF alongside) is separate from the paper. It tests the paper's conjecture that larger alphabets favour superposition, using 2-bit (4-point) symbols:
+
+- **Power domain:** on the AWGN broadcast channel with a 4-point superposition constellation, the best layout is orthogonal I/Q splitting. That layout is exactly TDM with power control, so there is no superposition gain.
+- **Discrete domain:** on the quaternary symmetric broadcast channel, superposition needs about 2^10 to 2^12 symbols to beat TDM, the same as or longer than the binary channel at equal SNR.
+
+To build it, run from `reports/`:
+
+```
+pdflatex superposition_alphabets && bibtex superposition_alphabets && pdflatex superposition_alphabets && pdflatex superposition_alphabets
+```
+
+It uses `../refs.bib`.
+
+| Script (in `scripts/`) | Produces |
+|---|---|
+| `qam_bc.py`, `qam_sweep.py` | 4-point AWGN normal approximations → `qam_sweep_results.txt` |
+| `qam_polar_sim.py`, `qam_realized.py` | polar SUP/TDM codes with SC decoding → `qam_realized_7.33dB_2.15dB_n128.txt` |
+| `qsbc.py`, `qsbc_sweep.py` | quaternary symmetric BC: families, random search, normal approximations → `qsbc_sweep_results.txt` |
+| `interior_gaps.py` | SUP − TDM gap vs blocklength, binary and quaternary → `interior_gaps.csv` |
+| `sup_vs_ccp.py` | SUP vs common codeword → `sup_vs_ccp_results.txt` |
+| `make_report_figures.py` | `reports/figures/*.pdf` |

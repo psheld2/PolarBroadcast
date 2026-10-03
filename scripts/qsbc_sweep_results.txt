@@ -1,0 +1,24 @@
+# NOTE: produced by an earlier qsbc_sweep.py whose finite-n metric required only TDM's R1 > 0.02.
+# Its negative finite-n values are floored near -0.02 by that definition and are superseded by
+# interior_gaps.csv (both schemes' R1 > 0.02). Positive values and crossovers are unaffected.
+== QSBC(0.0199, 0.1900)  symbol-error-matched to hard QPSK at the BSBC(0.01,0.10) SNRs
+   P2P capacities: user1 1.8276, user2 0.9974 bits/symbol
+   asymptotic: max R1 gain of SUP over time sharing +0.0785 at R2=0.699 (symmetric a=0.121)
+   random search over general P_V, P_X|V (|V|=4): best excess over the families +0.0202
+   families on the asymptotic boundary: ['subgroup', 'symmetric']
+  gg = np.where(np.isfinite(s) & np.isfinite(t) & (t > 0.02), s - t, -np.inf)
+   NA, eps=1e-2, max R1 gain over TDM: 2^5:+0.036(subgroup)  2^6:-0.000(subgroup)  2^7:-0.023(symmetric)  2^8:-0.024(symmetric)  2^9:-0.023(symmetric)  2^10:-0.004(symmetric)  2^11:+0.019(symmetric)  2^12:+0.036(symmetric)  2^13:+0.050(symmetric)
+== QSBC(0.0100, 0.1000)  same numbers as the paper's BSBC
+   P2P capacities: user1 1.9034, user2 1.3725 bits/symbol
+   asymptotic: max R1 gain of SUP over time sharing +0.0687 at R2=0.981 (symmetric a=0.109)
+   random search over general P_V, P_X|V (|V|=4): best excess over the families +0.0257
+   families on the asymptotic boundary: ['subgroup', 'symmetric']
+   NA, eps=1e-2, max R1 gain over TDM: 2^5:+0.021(subgroup)  2^6:-0.007(subgroup)  2^7:-0.018(subgroup)  2^8:-0.024(subgroup)  2^9:-0.027(symmetric)  2^10:-0.018(symmetric)  2^11:-0.001(symmetric)  2^12:+0.018(symmetric)  2^13:+0.033(symmetric)
+== QSBC(0.0500, 0.3000)  
+   P2P capacities: user1 1.6344, user2 0.6432 bits/symbol
+   asymptotic: max R1 gain of SUP over time sharing +0.0604 at R2=0.349 (symmetric a=0.203)
+   random search over general P_V, P_X|V (|V|=4): best excess over the families +0.0191
+   families on the asymptotic boundary: ['subgroup', 'symmetric']
+   NA, eps=1e-2, max R1 gain over TDM: 2^5:-0.028(symmetric)  2^6:+0.018(subgroup)  2^7:-0.014(subgroup)  2^8:-0.023(symmetric)  2^9:-0.017(symmetric)  2^10:+0.003(symmetric)  2^11:+0.020(symmetric)  2^12:+0.032(symmetric)  2^13:+0.042(symmetric)
+
+[exited with code 0]

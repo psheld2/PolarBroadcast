@@ -1,0 +1,29 @@
+# SNR1=7.33 dB SNR2=2.15 dB n=128 eps=0.01
+TDM  P1=None  R2=0.0000  R1=1.7266
+TDM  P1=None  R2=0.8359  R1=0.0000
+TDM  P1=1.0  R2=0.3906  R1=0.8594
+TDM  P1=0.5  R2=0.5469  R1=0.5859
+TDM  P1=0.25  R2=0.6172  R1=0.3281
+TDM  P1=1.5  R2=0.1875  R1=0.9531
+SUP  theta= 0 beta=0.05  R2=0.5859  R1=0.1250
+SUP  theta= 0 beta=0.10  R2=0.5078  R1=0.2578
+SUP  theta= 0 beta=0.20  R2=0.3906  R1=0.4922
+SUP  theta= 0 beta=0.30  R2=0.2891  R1=0.6719
+SUP  theta= 0 beta=0.50  R2=0.1641  R1=0.0000
+SUP  theta=30 beta=0.05  R2=0.5938  R1=0.1250
+SUP  theta=30 beta=0.10  R2=0.5469  R1=0.2656
+SUP  theta=30 beta=0.20  R2=0.4375  R1=0.4922
+SUP  theta=30 beta=0.30  R2=0.3594  R1=0.6719
+SUP  theta=30 beta=0.50  R2=0.2344  R1=0.8516
+SUP  theta=60 beta=0.05  R2=0.6328  R1=0.1250
+SUP  theta=60 beta=0.10  R2=0.6016  R1=0.2656
+SUP  theta=60 beta=0.20  R2=0.5312  R1=0.4922
+SUP  theta=60 beta=0.30  R2=0.4688  R1=0.6562
+SUP  theta=60 beta=0.50  R2=0.3438  R1=0.8594
+SUP  theta=90 beta=0.05  R2=0.6562  R1=0.1250
+SUP  theta=90 beta=0.10  R2=0.6250  R1=0.2578
+SUP  theta=90 beta=0.20  R2=0.5703  R1=0.4922
+SUP  theta=90 beta=0.30  R2=0.5078  R1=0.6641
+SUP  theta=90 beta=0.50  R2=0.3984  R1=0.8516
+
+[exited with code 0]
