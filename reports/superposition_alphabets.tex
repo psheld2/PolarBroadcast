@@ -33,7 +33,7 @@ The companion conference paper finds that on the binary symmetric broadcast chan
 \item \textbf{Hard-decision 8PSK and 8QAM} (Section~\ref{sec:8ary}). Gray labels protect the three bits unequally. A pure bit split beats TDM with power control by $0.03$--$0.22$ bits/symbol at $n=128$ and $0.07$--$0.25$ at $n=8192$, depending on the channel. The paper's construction loses $0.15$--$0.29$ bits/symbol to equal-power TDM at $n=128$.
 \item \textbf{Bit-level polarization} (Section~\ref{sec:levels}). Polar codes polarize each bit level at that level's own rate; they do not move protection between levels. With unequal levels the modulation supplies the cloud/satellite split, each user's code is an ordinary point-to-point polar code, and the satellite-selection problem of the paper does not arise.
 \item \textbf{Fine rate control} (Section~\ref{sec:ratectl}). Mixing two split modes across symbols, with one polar code per user spanning its bits, is within $0.006$ (8PSK) and $0.012$ (8QAM) bits/symbol of the best design at $n=128$. A biased satellite on one level (the paper's construction used as a knob) loses up to $0.22$ bits/symbol at $n=128$ and becomes competitive only from $n\approx2048$.
-\item \textbf{Polar simulations} (Section~\ref{sec:polar8}). At $n=128$ and 13/8~dB with SC decoding, polar mode mixing beats the convex hull of all simulated polar TDM points (equal power and three power splits) at every rate split tested, by $0.01$--$0.23$ (8PSK) and $0.05$--$0.21$ (8QAM) bits/symbol. The polar codes lose $0.23$--$0.48$ bits/symbol to the normal approximation. The paper's construction on every bit stays below TDM ($0.06$--$0.61$ bits/symbol with the best selection rule); its satellite rate depends strongly on how the satellite positions are chosen.
+\item \textbf{Polar simulations} (Section~\ref{sec:polar8}). At $n=128$ and 13/8~dB with SC decoding, polar mode mixing beats the convex hull of all simulated polar TDM points (equal power and three power splits) at every rate split tested, by $0.01$--$0.23$ (8PSK) and $0.05$--$0.21$ (8QAM) bits/symbol. The polar codes lose $0.23$--$0.48$ bits/symbol to the normal approximation. The paper's construction on every bit stays below TDM ($0.06$--$0.61$ bits/symbol with the best selection rule); its satellite rate depends strongly on how the satellite positions are chosen. Exhaustive search at $n=16$ and $32$ and a local search at $n=128$ show the best reliability rule is within one position, or $0.03$--$0.06$ bits per channel use, of the best sets found.
 \item \textbf{Against CCP}, SUP wins from about 32 QPSK symbols in both the binary and the quaternary model at equal SNR.
 \end{enumerate}
 
@@ -375,6 +375,30 @@ thesis point $(R_2, R_1)$ & common-threshold rule & best reliability rule\\
 \end{tabular}
 \end{table}
 
+\paragraph{How good is the reliability rule?} A fully exhaustive search over satellite sets is impossible at $n=128$ (choosing about 100 of 512 positions has some $10^{110}$ possibilities), so the rule was checked in two ways. At $n=16$ and $32$ on the BSBC every satellite set of up to five (respectively three) positions was simulated, on the same random draws for all sets. At $n=128$ a local search started from the best rule's largest feasible set and added positions one at a time, or swapped out the position that most often started a decoding error, while both users still met $10^{-2}$. Because choosing the best of many sets on fixed draws flatters the winner, every winning set and every rule's set was re-checked on $20{,}000$ fresh, independent blocks (Table~\ref{tab:search}).
+
+\begin{table}[t]
+\centering
+\caption{Satellite sets of the paper's construction: the best reliability rule against exhaustive search ($n=16,32$, BSBC) and local search ($n=128$). ``Positions'' is the largest number of satellite information bits with both users at block error rate $\le10^{-2}$; the last columns are block error rates (strong, weak user) on fresh draws.}
+\label{tab:search}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+case & best rule ($\tau$) & positions & search & positions & fresh-draw BLER: rule set / searched set\\
+\midrule
+BSBC $n=16$, $a=0.1$ & 0.05 & 2 & exhaustive & 3 & (0.0008, 0.0083) / (0.0024, 0.0084)\\
+BSBC $n=32$, $a=0.1$ & 0.3 & 5 & exhaustive ($\le3$ searched) & $\ge3$ & (0.0097, 0.0081) / --\\
+BSBC $n=32$, $a=0.2$ & 0.3 & 5 & exhaustive ($\le3$ searched) & $\ge3$ & (0.0021, 0.0021) / --\\
+BSBC $n=128$, $a=0.1$ & 0.4 & 15 & local & 23 & (0.0100, 0.0040) / (0.0095, 0.0089)\\
+BSBC $n=128$, $a=0.2$ & 0.2 & 60 & local & 64 & (0.0096, 0.0028) / (0.0107, 0.0109)\\
+8PSK $n=128$, $a=0.1$ & 0.2 & 106 & local & 112 & (0.0114, 0.0038) / (0.0114, 0.0111)\\
+8PSK $n=128$, $a=0.2$ & 0.2 & 199 & local & 203 & (0.0091, 0.0024) / (0.0100, 0.0086)\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The best reliability rule is close to the best sets found. At $n=16$ it is one position short of the exhaustive optimum; at $n=32$ it reaches more positions than the exhaustive search could cover; and in the exhaustive runs its sets rank between 1st and 45th among up to $4{,}960$ sets, against 10th to $1{,}079$th for the common-threshold rule. At $n=128$ the local search adds 4--8 positions ($0.03$--$0.06$ bits per channel use), but these sets sit at the target on fresh draws and two of the four slightly exceed it (by one to two standard errors): they use up the weak user's error margin, which the rule's sets leave unused, so the true gain is smaller. The best $\tau$ varies ($0.05$ at $n=16$, $0.2$--$0.4$ at $n=32$ and $128$), so a one-dimensional sweep over $\tau$ is advisable for each case. Better satellite positions therefore recover at most about $0.05$ bits/symbol, against a $0.37$--$0.6$ bits/symbol gap to TDM in the middle of the 8PSK region: that gap is a property of the biased-satellite construction at this length, not of the selection rule. (The $n=16$, $a=0.2$ case was also searched but supports no cloud bits, so it is not a superposition case.)
+
 \FloatBarrier
 \section{Discussion and implications for the paper}
 \begin{itemize}
@@ -388,7 +412,7 @@ thesis point $(R_2, R_1)$ & common-threshold rule & best reliability rule\\
 \section{Limitations}
 \begin{itemize}
 \item Normal approximations without third-order terms; values at $n\le64$ are indicative only. For the BSBC, adding $\frac12\log n/n$ to every constituent code did not move the TDM crossover.
-\item The 8PSK and 8QAM results are hard-decision models. Their polar simulations cover one SNR pair (13/8~dB) and $n=128$, with SC decoding only, a three-value TDM power grid, block error rates from 8{,}000 blocks (about $\pm11\%$ relative at $10^{-2}$, one standard deviation), and, for the paper's construction, the two selection rules described in Section~\ref{sec:polar8} rather than its Algorithm~2.
+\item The 8PSK and 8QAM results are hard-decision models. Their polar simulations cover one SNR pair (13/8~dB) and $n=128$, with SC decoding only, a three-value TDM power grid, block error rates from 8{,}000 blocks (about $\pm11\%$ relative at $10^{-2}$, one standard deviation), and, for the paper's construction, the selection rules described in Section~\ref{sec:polar8} rather than its Algorithm~2. Exhaustive searches of satellite sets cover only $n\le32$ and up to five positions; at $n=128$ only a local search was possible.
 \item 4-point constellations are the parallelogram family $a(v)+b(s)$; the 8QAM is the rectangular grid only; the quaternary discrete channel is either the QSC or hard-decision Gray QPSK.
 \item TDM with power control assumes an average power constraint across a user's slots and the same constellation and detector in every slot.
 \item The design grids are coarse (64 values of $\beta$; 8 values per bit for 8-ary). Random and local searches show the 8-ary gains are conservative by up to about $0.1$ bits/symbol asymptotically.
@@ -404,7 +428,7 @@ All scripts are in \texttt{scripts/} and need only numpy and matplotlib; the lon
 \item \texttt{gray\_qpsk\_bc.py}: hard-decision Gray QPSK (\texttt{gray\_qpsk\_results.txt}).
 \item \texttt{hard\_8ary\_bc.py}, \texttt{hard\_8ary\_pc.py}: 8PSK/8QAM channel matrices, designs, comparisons with equal-power and power-controlled TDM (\texttt{hard8\_*.txt}, \texttt{hard8pc\_*.txt}).
 \item \texttt{bit\_levels\_8ary.py}: Table~\ref{tab:levels} (\texttt{bit\_levels\_results.txt}). \texttt{rate\_control\_8ary.py}: Section~\ref{sec:ratectl} (\texttt{ratectl\_*\_13\_8.txt}).
-\item \texttt{polar\_8ary\_sim.py} (with \texttt{run\_polar\_8ary.sh} for all 72 configurations, about 10 minutes on 14 cores): Section~\ref{sec:polar8} (\texttt{polar\_8ary\_results.jsonl}); \texttt{na\_curves\_8ary.py}: the reference curves (\texttt{na\_curves\_8ary.csv}); \texttt{polar\_8ary\_summary.py}: Tables~\ref{tab:polar8} and~\ref{tab:gagval} (\texttt{polar\_8ary\_summary.txt}). The selection-rule runs use \texttt{polar\_8ary\_sim.py -{}-select} (\texttt{gag\_select\_results.jsonl}) and \texttt{gag\_bsbc\_sim.py} (\texttt{gag\_bsbc\_results.jsonl}).
+\item \texttt{polar\_8ary\_sim.py} (with \texttt{run\_polar\_8ary.sh} for all 72 configurations, about 10 minutes on 14 cores): Section~\ref{sec:polar8} (\texttt{polar\_8ary\_results.jsonl}); \texttt{na\_curves\_8ary.py}: the reference curves (\texttt{na\_curves\_8ary.csv}); \texttt{polar\_8ary\_summary.py}: Tables~\ref{tab:polar8} and~\ref{tab:gagval} (\texttt{polar\_8ary\_summary.txt}). The selection-rule runs use \texttt{polar\_8ary\_sim.py -{}-select} (\texttt{gag\_select\_results.jsonl}) and \texttt{gag\_bsbc\_sim.py} (\texttt{gag\_bsbc\_results.jsonl}); Table~\ref{tab:search} comes from \texttt{gag\_search.py} (\texttt{gag\_search\_results.jsonl}).
 \item \texttt{sup\_vs\_ccp.py}: Table~\ref{tab:ccp}. \texttt{interior\_gaps.py}: Figure~\ref{fig:cross} and Table~\ref{tab:qsbc}.
 \item \texttt{make\_report\_figures.py}: all figures.
 \end{itemize}
